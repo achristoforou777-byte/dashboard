@@ -55,6 +55,7 @@
       e.preventDefault(); const f = new FormData(e.target), email = f.get('email').trim(), password = f.get('pw');
       const r = sign ? await sb.auth.signUp({ email, password }) : await sb.auth.signInWithPassword({ email, password });
       if (r.error) return authView(mode, r.error.message.includes('Invalid login') ? 'Λάθος email ή κωδικός.' : r.error.message.includes('confirmed') ? 'Επιβεβαίωσε πρώτα το email σου (δες τα εισερχόμενα).' : r.error.message);
+      if (sign && r.data.user && !(r.data.user.identities || []).length) return authView('login', 'Υπάρχει ήδη λογαριασμός με αυτό το email. Συνδέσου με τον κωδικό που ήδη έχεις.');
       if (sign && !r.data.session) return authView('login', 'Σου στείλαμε email επιβεβαίωσης. Πάτα το link και μετά συνδέσου εδώ.');
     });
   }
