@@ -1,0 +1,1 @@
+window.CFG={"env": "prod", "url": "https://hgjaicyxxherxiwzreib.supabase.co", "key": "sb_publishable_rm9-_sZ6K_u-5yCuWl9maQ_Fdybj3sP", "vapid": "BNwrFc_V0S-FESjQ8iwjX_J8tIkcWcayiFJZu7WCW9wTGLn9EWAi9r4dXfT11ULG0J2E3WoQNAClDqdN6d5j5lw"};
