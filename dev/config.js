@@ -1,0 +1,1 @@
+window.CFG={"env": "dev", "url": "https://vvnxjbqypxxjnmvgfjfv.supabase.co", "key": "sb_publishable_XJAeOniUktN8q9H92ZOrhw_ADSl_Q5q", "vapid": "BNwrFc_V0S-FESjQ8iwjX_J8tIkcWcayiFJZu7WCW9wTGLn9EWAi9r4dXfT11ULG0J2E3WoQNAClDqdN6d5j5lw"};

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="el"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d0b0a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Πίνακας">
+<title>Ο πίνακάς μου</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a private command centre: quiet, premium, nocturnal.
+   IDEA: frosted-glass instruments floating over a warm, blurred room at night.
+   PICTURE: glass cards (KPIs with sparklines, cash-flow chart, project pipeline) over a glowing ambient scene or the owner's own photo.
+   COLOUR and TYPE: near-black warm ground, ember orange accent, mint for money in; Plus Jakarta Sans.
+   LAYOUT: glass sidebar + top bar on Mac; glass tab bar + orange add button on the phone; one dark palette in both themes. */
+:root{color-scheme:dark;--ink:#f6f1ec;--mute:rgba(246,241,236,.72);--dim:rgba(246,241,236,.52);--line:rgba(255,255,255,.09);--edge:rgba(255,255,255,.15);--hi:rgba(255,255,255,.24);--acc:#ff6a3d;--acc2:#ff9b54;--good:#62e3ae;--bad:#ff8170;--r:22px}
+*{box-sizing:border-box;min-width:0}
+html{background:#0d0b0a}
+body{margin:0;color:var(--ink);font:15px/1.5 "Plus Jakarta Sans",system-ui,sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit;color:inherit}
+.scene{position:fixed;inset:0;z-index:-1;overflow:hidden;background:#0d0b0a center/cover no-repeat}
+.scene i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.75}
+.scene i:nth-child(1){width:46vmax;height:46vmax;left:-12vmax;top:-14vmax;background:radial-gradient(#ff6a3d,transparent 65%)}
+.scene i:nth-child(2){width:40vmax;height:40vmax;right:-10vmax;top:5vmax;background:radial-gradient(#b8763a,transparent 65%);opacity:.55}
+.scene i:nth-child(3){width:50vmax;height:50vmax;right:5vmax;bottom:-28vmax;background:radial-gradient(#245a5e,transparent 65%);opacity:.6}
+.scene i:nth-child(4){width:34vmax;height:34vmax;left:18vmax;bottom:-12vmax;background:radial-gradient(#5b2440,transparent 65%);opacity:.55}
+.scene.photo i{display:none}.scene.photo::after{content:"";position:absolute;inset:0;background:rgba(10,8,7,.35)}
+@media(prefers-reduced-motion:no-preference){.scene i{animation:drift 26s ease-in-out infinite alternate}.scene i:nth-child(2){animation-duration:32s}.scene i:nth-child(3){animation-duration:38s}
+ @keyframes drift{to{transform:translate(6vmax,4vmax) scale(1.08)}}}
+.glass{position:relative;background:linear-gradient(155deg,rgba(255,255,255,.15),rgba(255,255,255,.075) 45%,rgba(255,255,255,.10));backdrop-filter:blur(72px) saturate(170%);-webkit-backdrop-filter:blur(72px) saturate(170%);border:1px solid var(--edge);border-radius:var(--r);box-shadow:inset 0 1px 0 var(--hi),0 24px 60px -24px rgba(0,0,0,.7)}
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;padding:18px;max-width:1500px;margin:0 auto}
+aside{position:sticky;top:18px;height:calc(100vh - 36px);display:flex;flex-direction:column;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 18px;font-weight:800;font-size:17px}
+.logo{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#1a0d07;font-weight:800;font-size:14px;box-shadow:0 6px 18px -4px var(--acc)}
+.sec{font-size:11.5px;color:var(--dim);padding:14px 10px 6px;font-weight:600}
+.nav a,.plink{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:12px;color:var(--mute);font-weight:500;min-height:42px}
+.nav a:hover,.plink:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+.nav a.on{color:var(--ink);background:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.nav svg{width:18px;height:18px;flex:none}
+.badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--acc);color:#1a0d07;font-size:11.5px;font-weight:700;display:grid;place-items:center}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 10px currentColor}
+.plist{overflow:auto;flex:1}
+.meter{margin:10px 6px 4px;padding:12px;border-radius:16px;background:rgba(0,0,0,.18);border:1px solid var(--line)}
+.meter small{color:var(--mute);font-size:12px;display:flex;justify-content:space-between}.meter b{font-size:18px}
+.track{height:6px;border-radius:9px;background:rgba(255,255,255,.08);margin-top:8px;overflow:hidden}.track span{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.me{display:flex;align-items:center;gap:10px;padding:12px 8px 0;border-top:1px solid var(--line);margin-top:12px;font-size:13.5px}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ffb27a,#ff6a3d);color:#1a0d07;font-weight:800;font-size:13px;flex:none}
+.me small{display:block;color:var(--dim);font-size:12px}
+.top{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 22px;margin-bottom:18px}
+.top h1{margin:0;font-size:19px;font-weight:700;line-height:1.2}.top p{margin:0;color:var(--mute);font-size:13px}
+.search{margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:999px;padding:0 14px;height:42px;width:min(320px,34vw)}
+.search input{border:0;background:none;outline:0;width:100%;font-size:14px;min-height:0;padding:0}.search svg{width:16px;opacity:.6;flex:none}
+.cta{display:inline-flex;align-items:center;gap:7px;border:0;cursor:pointer;height:42px;padding:0 18px;border-radius:999px;font-weight:700;color:#1d0c05;background:linear-gradient(135deg,var(--acc2),var(--acc));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 24px -8px var(--acc)}
+.cta svg{width:16px}.cta:hover{filter:brightness(1.08)}
+.hello{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin:4px 4px 4px;text-wrap:balance}
+.lede{color:var(--mute);margin:0 4px 20px;font-size:15px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px}
+.kpi{padding:16px 18px 14px;transition:transform .25s}.kpi:hover{transform:translateY(-3px)}
+.kpi .lab{display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-size:12.5px;font-weight:500}
+.chg{font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(98,227,174,.13);color:var(--good)}.chg.n{background:rgba(255,129,112,.13);color:var(--bad)}
+.kpi strong{display:block;font-size:clamp(22px,2.4vw,30px);font-weight:800;letter-spacing:-.02em;margin:10px 0 2px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.spark{display:block;width:100%;height:34px}
+.ringwrap{display:flex;align-items:center;gap:14px;margin-top:8px}.ringwrap small{color:var(--mute);font-size:12.5px;line-height:1.35}
+.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+.card{padding:20px}
+.card h2{margin:0;font-size:16px;font-weight:700}.card .sub{color:var(--mute);font-size:13px;margin:2px 0 0}
+.chead{flex-wrap:wrap;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--mute)}.legend span::before{content:"";display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:3px;background:var(--c)}
+.big{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:6px 0 0;font-variant-numeric:tabular-nums}
+.fig{position:relative;height:230px;margin-top:8px}.fig svg{position:absolute;inset:0;width:100%;height:100%}
+.task{display:flex;align-items:center;gap:12px;min-height:54px;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}
+.chk{flex:none;width:24px;height:24px;border-radius:8px;border:1.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.04);cursor:pointer;display:grid;place-items:center;transition:.2s}
+.chk:hover{border-color:var(--acc)}.done .chk{background:linear-gradient(135deg,var(--acc2),var(--acc));border-color:transparent}
+.done .chk::after{content:"";width:9px;height:5px;border:2px solid #1d0c05;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.tt{flex:1;text-align:left;background:none;border:0;padding:9px 0;cursor:pointer}
+.tt small{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12.5px}.done .tt>span{text-decoration:line-through;color:var(--dim)}
+.late .tt small{color:var(--bad)}
+.pri{font-size:10.5px;font-weight:700;color:var(--acc2);border:1px solid rgba(255,155,84,.4);border-radius:999px;padding:1px 7px;margin-left:8px;vertical-align:2px}
+.grp{font-size:12px;color:var(--dim);font-weight:600;margin:14px 0 2px}.grp:first-child{margin-top:0}
+.pcard{display:block;padding:14px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid var(--line);margin-bottom:10px;transition:.2s;cursor:pointer}
+.pcard:hover{background:rgba(255,255,255,.08);border-color:var(--edge);transform:translateY(-2px)}
+.pcard .t{display:flex;align-items:center;gap:9px;font-weight:700}.pcard p{margin:6px 0 10px;color:var(--mute);font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pmeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12.5px;color:var(--mute)}
+.mini{width:24px;height:24px;font-size:10.5px}
+.sharebtn{border:1px solid rgba(255,155,84,.45);background:rgba(255,106,61,.12);color:var(--acc2);border-radius:999px;padding:0 11px;height:30px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}.sharebtn.unset{border-style:dashed}.sharebtn:hover{background:rgba(255,106,61,.22)}
+.mine{padding:12px 14px;border-radius:14px;background:rgba(255,106,61,.1);border:1px solid rgba(255,106,61,.3);font-size:14px;line-height:1.45}.mine b{font-size:20px;display:block;color:var(--ink)}.mine small{color:var(--mute)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}.pos{color:var(--good)}.neg{color:var(--bad)}
+.board{display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:16px;overflow-x:auto;padding-bottom:6px}
+.col{padding:14px;min-height:340px}.col.over{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc),0 0 30px -6px var(--acc)}
+.colh{display:flex;align-items:center;gap:8px;font-weight:700;margin:2px 4px 12px}.colh span{color:var(--dim);font-weight:500;margin-left:auto;font-size:13px}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;background:none;border:0;border-bottom:1px solid var(--line);padding:11px 0;text-align:left;cursor:pointer}
+.row:last-child{border-bottom:0}.ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.ico svg{width:17px}.row small{display:block;color:var(--dim);font-size:12.5px}.row .num{font-weight:700}
+.bar{display:grid;grid-template-columns:minmax(0,8.5em) minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;font-size:13.5px}
+.bar em{display:block;height:7px;border-radius:9px;background:linear-gradient(90deg,var(--good),#9ff0cc)}.bar em+em{margin-top:4px;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin-bottom:10px}
+.chip{flex:none;border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:999px;padding:0 15px;height:38px;cursor:pointer;color:var(--mute);font-weight:500;font-size:13.5px}
+.chip.on{background:rgba(255,255,255,.14);color:var(--ink);border-color:var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.15)}
+.btn{white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--edge);background:rgba(255,255,255,.06);border-radius:999px;padding:0 16px;height:40px;cursor:pointer;font-weight:600;font-size:13.5px}
+.btn:hover{background:rgba(255,255,255,.12)}.btn.red{color:var(--bad);border-color:rgba(255,129,112,.35)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.empty{color:var(--dim);padding:16px 0;margin:0;font-size:14px}
+.settle{padding:14px 16px;border-radius:16px;background:rgba(255,106,61,.1);border:1px solid rgba(255,106,61,.3);margin-bottom:12px}.settle small{color:var(--mute)}
+.note{padding:12px 0;border-bottom:1px solid var(--line)}.note:last-child{border:0}.note p{margin:3px 0 0;white-space:pre-wrap}.note small{color:var(--dim)}
+.month{display:flex;align-items:center;gap:6px}.month b{min-width:9.5em;text-align:center;font-size:15px}
+.icb{width:40px;height:40px;border-radius:50%;border:1px solid var(--edge);background:rgba(255,255,255,.06);cursor:pointer;display:grid;place-items:center}
+#msg{margin:0 0 14px;padding:12px 16px;color:#ffd9cc;border-color:rgba(255,106,61,.4)}#msg:empty{display:none}
+dialog{border:0;padding:0;background:none;color:var(--ink);width:min(540px,94vw);max-height:92vh;overflow:visible}
+dialog::backdrop{background:rgba(8,6,5,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+dialog form{padding:22px;display:grid;gap:14px;max-height:92vh;overflow:auto;background:linear-gradient(155deg,rgba(60,50,44,.72),rgba(28,23,20,.78))}
+dialog h2{margin:0;font-size:19px}dialog .sub{color:var(--mute);font-size:13px;margin:-10px 0 0}
+label{display:grid;gap:6px;font-size:12.5px;color:var(--mute);font-weight:500}
+input,select,textarea{font-size:16px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:rgba(0,0,0,.28);min-height:46px;width:100%;outline:0;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:rgba(255,155,84,.7);box-shadow:0 0 0 4px rgba(255,106,61,.15)}
+select option{background:#2a2320}
+button:focus-visible,a:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg label{display:block}
+.seg input{position:absolute;opacity:0;pointer-events:none}.seg span{display:block;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--mute);cursor:pointer;font-size:13.5px}
+form.settle .ns{display:none}form:not(.settle) .os{display:none}
+dialog .chip.on{background:linear-gradient(135deg,var(--acc2),var(--acc));color:#1d0c05;border-color:transparent;font-weight:700;box-shadow:0 6px 16px -6px var(--acc)}
+.seg input:checked+span{background:linear-gradient(135deg,var(--acc2),var(--acc));color:#1d0c05;border-color:transparent;font-weight:700;box-shadow:0 6px 16px -6px var(--acc)}
+.seg input:focus-visible+span{outline:2px solid var(--acc2)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.fb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}.fb .red{margin-right:auto}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;padding:10px 12px 10px 18px;display:none;gap:12px;align-items:center;z-index:20;border-radius:999px}
+#toast button{background:none;border:0;color:var(--acc2);font-weight:700;cursor:pointer;min-height:34px}
+.tabbar,.fab{display:none}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:899px){
+ .shell{grid-template-columns:minmax(0,1fr);padding:calc(10px + env(safe-area-inset-top)) 12px calc(110px + env(safe-area-inset-bottom))}
+ aside{display:none}.top{padding:10px 10px 10px 16px}.top .cta{display:none}.search{width:auto;flex:1;max-width:200px}
+ .tabbar{display:flex;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:10;padding:6px;border-radius:24px;justify-content:space-around}
+ .tabbar a{flex:1;display:grid;justify-items:center;gap:2px;font-size:11px;color:var(--mute);padding:8px 0;border-radius:16px}.tabbar a.on{color:var(--ink);background:rgba(255,255,255,.1)}.tabbar svg{width:20px;height:20px}
+ .fab{display:grid;place-items:center;position:fixed;right:20px;bottom:calc(92px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;border:0;z-index:11;color:#1d0c05;background:linear-gradient(135deg,var(--acc2),var(--acc));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 12px 28px -6px var(--acc)}
+ .fab svg{width:26px}#toast{bottom:calc(160px + env(safe-area-inset-bottom))}}
+@media(max-width:560px){.kpis{gap:10px}.kpi{padding:14px}.board{grid-template-columns:repeat(3,minmax(250px,82vw))}.card{padding:16px}.two{grid-template-columns:minmax(0,1fr)}.bar{grid-template-columns:minmax(0,6em) minmax(0,1fr) auto}.top p{display:none}}
+#auth{position:fixed;inset:0;z-index:30;display:none;place-items:center;padding:20px;background:rgba(8,6,5,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.authcard{width:min(400px,100%);padding:28px;display:grid;gap:14px;background:linear-gradient(155deg,rgba(60,50,44,.72),rgba(28,23,20,.8))}
+.authcard h2{margin:6px 0 0;font-size:24px}.anote{margin:0;padding:10px 12px;border-radius:12px;background:rgba(255,106,61,.12);border:1px solid rgba(255,106,61,.3);font-size:14px}
+.sbox{display:grid;gap:10px;padding:14px;border-radius:16px;background:rgba(0,0,0,.2);border:1px solid var(--line)}
+.avbtn{border:0;padding:0;cursor:pointer;background:none;display:none}
+.envtag{font-size:11px;font-weight:800;color:#1d0c05;background:#ffc75f;border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:3px}
+@media(max-width:899px){.avbtn{display:block}}
+</style><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js"></script></head><body>
+<div id="auth"></div>
+<div class="scene" id="scene"><i></i><i></i><i></i><i></i></div>
+<div class="shell">
+<aside class="glass">
+ <div class="brand"><span class="logo">AC</span>Ο πίνακάς μου<span id="envtag"></span></div>
+ <div class="sec">Χώρος εργασίας</div>
+ <nav class="nav" id="nav"></nav>
+ <div class="sec">Ενεργά projects</div>
+ <div class="plist" id="plist"></div>
+ <div class="meter" id="meter"></div>
+ <div class="me"><span class="av">ΑΧ</span><div>Ανδρέας Χριστοφόρου<small><button class="tt" style="padding:0;color:var(--dim);font-size:12px" data-act="settings">Ρυθμίσεις</button></small></div></div>
+</aside>
+<div>
+ <div class="top glass"><div><h1 id="ttl">Επισκόπηση</h1><p id="tsub"></p></div>
+  <label class="search" aria-label="Αναζήτηση"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Αναζήτηση…" autocomplete="off"></label>
+  <button class="avbtn" data-act="settings" aria-label="Ρυθμίσεις"><span class="av">ΑΧ</span></button><button class="cta" data-act="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Νέα καταχώρηση</button></div>
+ <div id="msg" class="glass"></div>
+ <main id="app"><p class="empty">Φόρτωση…</p></main>
+</div></div>
+<nav class="tabbar glass" id="tabbar"></nav>
+<button class="fab" data-act="add" aria-label="Νέα καταχώρηση"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
+<input type="file" id="bgfile" accept="image/*" hidden>
+<dialog id="dlg"></dialog>
+<div id="toast" class="glass"><span></span><button type="button">Αναίρεση</button></div>
+<script src="data.js"></script>
+<script>
+{
+const $=id=>document.getElementById(id),app=$('app'),dlg=$('dlg'),msg=$('msg');
+const S={projects:[],tasks:[],tx:[],notes:[],rec:[],all:[],month:null,tf:'all',mf:'all',q:'',ready:false};
+const COLS=['projects','tasks','tx','notes','rec'];let db=null,F=null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>iso(new Date()),addDays=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return iso(d)};
+const eur=n=>new Intl.NumberFormat('el-GR',{style:'currency',currency:'EUR',minimumFractionDigits:Number.isInteger(+n||0)?0:2,maximumFractionDigits:2}).format(n||0);
+const short=n=>Math.abs(n)>=10000?new Intl.NumberFormat('el-GR',{style:'currency',currency:'EUR',notation:'compact',maximumFractionDigits:1}).format(n):eur(n);
+const fmtD=s=>s?new Date(s+'T12:00').toLocaleDateString('el-GR',{day:'numeric',month:'short'}):'';
+const mName=(m,o={month:'long',year:'numeric'})=>new Date(m+'-15T12:00').toLocaleDateString('el-GR',o);
+const mShift=(m,n)=>{const d=new Date(m+'-15T12:00');d.setMonth(d.getMonth()+n);return iso(d).slice(0,7)};
+S.month=today().slice(0,7);
+const STATUS={active:'Ενεργό',waiting:'Σε αναμονή',idea:'Ιδέα'},ORDER={active:0,waiting:1,idea:2};
+const PAL=['#ff8a4c','#ffc75f','#62e3ae','#8fb5ff','#d49bff','#ff8fb3','#6fd6ff'];
+const color=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return PAL[h%PAL.length]};
+const initials=s=>String(s||'').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const proj=id=>S.projects.find(p=>p.id===id),pname=id=>proj(id)?.name||'Χωρίς project';
+const projs=()=>[...S.projects].sort((a,b)=>(ORDER[a.status]??3)-(ORDER[b.status]??3)||String(a.name).localeCompare(b.name,'el'));
+const pShare=p=>p?(p.share??(p.partner?50:100)):100,txShare=x=>x.share??pShare(proj(x.project)),mine=x=>(+x.amount||0)*txShare(x)/100;
+const sumMine=(l,t)=>l.filter(x=>x.type===t).reduce((a,x)=>a+mine(x),0);
+const sum=(l,t)=>l.filter(x=>x.type===t).reduce((a,x)=>a+(+x.amount||0),0);
+function expand(){const out=[],now=today().slice(0,7);
+ for(const r of S.rec){if(!r.start)continue;let m=r.start.slice(0,7);const day=+r.start.slice(8,10)||1,last=r.end&&r.end<now?r.end:now;let g=0;
+  while(m<=last&&g++<240){const dim=new Date(+m.slice(0,4),+m.slice(5,7),0).getDate();out.push({...r,id:'r~'+r.id+'~'+m,rid:r.id,date:m+'-'+String(Math.min(day,dim)).padStart(2,'0')});m=mShift(m,1)}}
+ return out}
+const recon=()=>{S.all=[...S.tx,...expand()]};
+const sgn=n=>n>0?'pos':n<0?'neg':'';
+const empty=t=>`<p class="empty">${t}</p>`;
+const byDue=(a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(b.prio==='high')-(a.prio==='high');
+const I={home:'<path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',proj:'<rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/>',task:'<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12 3 3 5-6"/>',money:'<rect x="2.5" y="6" width="19" height="13" rx="3"/><path d="M2.5 10h19M16 15h2"/>',up:'<path d="M7 17 17 7M9 7h8v8"/>',down:'<path d="M17 7 7 17M15 17H7V9"/>'};
+const ico=(k,sw=1.9)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
+const NAV=[['home','Επισκόπηση','home'],['projects','Projects','proj'],['tasks','Tasks','task'],['money','Χρήματα','money']];
+const months=n=>Array.from({length:n},(_,i)=>mShift(today().slice(0,7),i-n+1));
+const mTot=(m,pid)=>{const l=S.all.filter(x=>(x.date||'').startsWith(m)&&(!pid||x.project===pid));return{i:sum(l,'in'),o:sum(l,'out')}};
+function spark(vals,col){const mx=Math.max(...vals),mn=Math.min(...vals),r=mx-mn||1;const pts=vals.map((v,i)=>`${(i/(vals.length-1)*100).toFixed(1)},${(28-(v-mn)/r*24).toFixed(1)}`).join(' ');
+ return `<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+function ring(p){const c=2*Math.PI*22;return `<svg width="58" height="58" viewBox="0 0 58 58"><circle cx="29" cy="29" r="22" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="6"/><circle cx="29" cy="29" r="22" fill="none" stroke="url(#rg)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c*p} ${c}" transform="rotate(-90 29 29)"/><defs><linearGradient id="rg"><stop offset="0" stop-color="#ff9b54"/><stop offset="1" stop-color="#ff6a3d"/></linearGradient></defs><text x="29" y="33.5" text-anchor="middle" fill="#f6f1ec" font-size="13" font-weight="800" font-family="Plus Jakarta Sans">${Math.round(p*100)}%</text></svg>`}
+const chg=(a,b)=>{if(!b)return '';const p=Math.round((a-b)/Math.abs(b)*100);return `<span class="chg ${p<0?'n':''}">${p>=0?'↑':'↓'} ${Math.abs(p)}%</span>`};
+
+function taskRow(x,showP=true){
+ const t=today(),late=!x.done&&x.due&&x.due<t,p=proj(x.project);
+ const sub=[showP&&p?`<i class="dot" style="color:${color(p.id)};background:${color(p.id)};width:7px;height:7px"></i>${esc(p.name)}`:'',x.due?(late?'Έπρεπε ':'')+fmtD(x.due):''].filter(Boolean).join(' · ');
+ return `<div class="task ${x.done?'done':''} ${late?'late':''}"><button class="chk" data-act="toggle" data-id="${esc(x.id)}" aria-label="Ολοκληρώθηκε"></button>
+ <button class="tt" data-act="edit" data-kind="task" data-id="${esc(x.id)}"><span>${esc(x.title)}${x.prio==='high'?'<b class="pri">Υψηλή</b>':''}</span>${sub?`<small>${sub}</small>`:''}</button></div>`}
+const tgroup=(t,l,showP=true)=>l.length?`<div class="grp">${t} · ${l.length}</div>${l.sort(byDue).map(x=>taskRow(x,showP)).join('')}`:'';
+function txRow(x,showP=true){
+ if(x.type==='settle'){const pn=esc(proj(x.project)?.partner||'συνεργάτης');return `<button class="row" data-act="edit" data-kind="${x.rid?'rec':'tx'}" data-id="${esc(x.rid||x.id)}"><span class="ico" style="color:#ffc75f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13l-4-4M17 17H4l4 4"/></svg></span>
+ <span>${esc(x.desc||'Εξόφληση')}<b class="pri" style="color:#ffc75f;border-color:rgba(255,199,95,.45)">εξόφληση</b><small>${[fmtD(x.date),showP?esc(pname(x.project)):'',x.dir==='out'?'εσύ → '+pn:pn+' → εσύ'].filter(Boolean).join(' · ')}</small></span>
+ <span class="num" style="text-align:right;color:#ffc75f">${eur(+x.amount)}<small style="font-weight:500">δεν μετράει σε έσοδα/έξοδα</small></span></button>`}
+ const by={me:'εγώ',partner:proj(x.project)?.partner||'συνεργάτης',company:'εταιρεία'}[x.by]||'',inc=x.type==='in';
+ return `<button class="row" data-act="edit" data-kind="${x.rid?'rec':'tx'}" data-id="${esc(x.rid||x.id)}"><span class="ico" style="color:${inc?'var(--good)':'var(--bad)'}">${ico(inc?'down':'up',2.2)}</span>
+ <span>${esc(x.desc||x.cat||'Κίνηση')}${x.rid?'<b class="pri" style="color:#8fb5ff;border-color:rgba(143,181,255,.45)">κάθε μήνα</b>':''}<small>${[fmtD(x.date),showP?esc(pname(x.project)):'',x.cat&&x.desc?esc(x.cat):'',by?(inc?'εισέπραξε ':'πλήρωσε ')+esc(by):''].filter(Boolean).join(' · ')}</small></span>
+ <span class="num ${inc?'pos':'neg'}" style="text-align:right">${inc?'+':'−'}${eur(+x.amount)}${txShare(x)<100?`<small style="font-weight:500">δικά σου ${eur(mine(x))}</small>`:''}</span></button>`}
+function pcard(p,drag){
+ const open=S.tasks.filter(t=>t.project===p.id&&!t.done).length,l=S.all.filter(t=>t.project===p.id),bal=sum(l,'in')-sum(l,'out');
+ return `<a class="pcard" href="#p-${esc(p.id)}" ${drag?`draggable="true" data-pid="${esc(p.id)}"`:''}><div class="t"><i class="dot" style="color:${color(p.id)};background:${color(p.id)}"></i>${esc(p.name)}</div>
+ <p>${p.next?'Επόμενο: '+esc(p.next):esc(p.desc||'Χωρίς περιγραφή ακόμα')}</p>
+ <div class="pmeta">${p.partner?`<span class="av mini" title="${esc(p.partner)}">${esc(initials(p.partner))}</span>`:''}<span>${open} ${open===1?'task':'tasks'}</span><button class="sharebtn ${p.share==null?'unset':''}" data-act="share" data-id="${esc(p.id)}">${p.share==null?'Όρισε το ποσοστό σου':'Εσύ '+p.share+'%'}</button><span class="num ${sgn(bal)}" style="margin-left:auto;font-weight:700" title="Σύνολο project">${bal?eur(bal):'—'}</span></div></a>`}
+
+function vHome(){
+ const t=today(),open=S.tasks.filter(x=>!x.done),over=open.filter(x=>x.due&&x.due<t),tod=open.filter(x=>x.due===t),wk=open.filter(x=>x.due>t&&x.due<=addDays(t,7));
+ const ms=months(6),ser=ms.map(m=>mTot(m)),cur=ser[5],prev=ser[4];
+ const wkAgo=Date.now()-7*864e5,doneWk=S.tasks.filter(x=>x.done&&(x.doneAt||0)>wkAgo).length,due=over.length+tod.length+wk.length,rate=doneWk+due?doneWk/(doneWk+due):0;
+ const act=projs().filter(p=>p.status==='active'),h=new Date().getHours();
+ const lede=tod.length||over.length?`Έχεις ${tod.length} ${tod.length===1?'task':'tasks'} για σήμερα${over.length?` και ${over.length} ${over.length===1?'καθυστερημένο':'καθυστερημένα'}`:''}.`:'Τίποτα επείγον σήμερα. Καλή ευκαιρία να σχεδιάσεις την εβδομάδα.';
+ return `<div><div class="hello">${h<12?'Καλημέρα':'Καλησπέρα'}, Ανδρέα</div><p class="lede">${lede}</p></div>
+ <section class="kpis">
+ <div class="kpi glass"><div class="lab">Έσοδα μήνα${chg(cur.i,prev.i)}</div><strong>${short(cur.i)}</strong>${spark(ser.map(s=>s.i),'#62e3ae')}</div>
+ <div class="kpi glass"><div class="lab">Έξοδα μήνα${chg(cur.o,prev.o)}</div><strong>${short(cur.o)}</strong>${spark(ser.map(s=>s.o),'#ff8170')}</div>
+ <div class="kpi glass"><div class="lab">Καθαρό μήνα</div><strong class="${sgn(cur.i-cur.o)}">${short(cur.i-cur.o)}</strong>${spark(ser.map(s=>s.i-s.o),'#ff9b54')}</div>
+ <div class="kpi glass"><div class="lab">Πρόοδος εβδομάδας</div><div class="ringwrap">${ring(rate)}<small>${doneWk} ${doneWk===1?'έγινε':'έγιναν'} αυτή την εβδομάδα<br>${due} ${due===1?'ανοιχτό':'ανοιχτά'} για τις 7 μέρες</small></div></div></section>
+ <section class="grid"><div class="card glass"><div class="chead"><div><h2>Ροή χρημάτων</h2><p class="sub">Τελευταίοι 6 μήνες, όλα τα projects</p><div class="big num ${sgn(ser.reduce((a,s)=>a+s.i-s.o,0))}">${eur(ser.reduce((a,s)=>a+s.i-s.o,0))}</div></div>
+ <div class="legend"><span style="--c:var(--good)">Έσοδα</span><span style="--c:var(--acc)">Έξοδα</span></div></div><div class="fig" id="flow"></div></div>
+ <div class="card glass"><div class="chead"><div><h2>Ενεργά projects</h2><p class="sub">${act.length} σε εξέλιξη</p></div><a class="btn" href="#projects">Όλα</a></div>${act.map(p=>pcard(p)).join('')||empty('Κανένα ενεργό project.')}</div></section>
+ <section class="card glass"><div class="chead"><div><h2>Να γίνουν</h2><p class="sub">Καθυστερημένα, σήμερα και επόμενες 7 μέρες</p></div><button class="btn" data-act="add" data-kind="task">+ Task</button></div>
+ ${tgroup('Καθυστερημένα',over)}${tgroup('Σήμερα',tod)}${tgroup('Επόμενες μέρες',wk)}${due?'':empty('Δεν υπάρχει τίποτα προγραμματισμένο. Πάτα «+ Task» για να προσθέσεις.')}</section>`}
+
+function drawFlow(){const el=$('flow');if(!el)return;const ms=months(6),ser=ms.map(m=>mTot(m));
+ const draw=()=>{const W=el.clientWidth,H=el.clientHeight,pl=W<480?8:48,pr=10,pt=10,pb=26;if(!W)return;
+  const mx=Math.max(100,...ser.map(s=>Math.max(s.i,s.o)))*1.15,x=i=>pl+i*(W-pl-pr)/(ms.length-1),y=v=>pt+(H-pt-pb)*(1-v/mx);
+  const path=k=>ser.map((s,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(s[k]).toFixed(1)}`).join('');
+  const area=k=>path(k)+`L${x(ms.length-1)},${H-pb}L${x(0)},${H-pb}Z`;
+  const grid=[0,.5,1].map(f=>`<line x1="${pl}" x2="${W-pr}" y1="${y(mx/1.15*f)}" y2="${y(mx/1.15*f)}" stroke="rgba(255,255,255,.07)"/>${W<480?'':`<text x="${pl-8}" y="${y(mx/1.15*f)+4}" text-anchor="end" font-size="11" fill="rgba(246,241,236,.4)">${short(mx/1.15*f)}</text>`}`).join('');
+  el.innerHTML=`<svg><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#62e3ae" stop-opacity=".28"/><stop offset="1" stop-color="#62e3ae" stop-opacity="0"/></linearGradient><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6a3d" stop-opacity=".26"/><stop offset="1" stop-color="#ff6a3d" stop-opacity="0"/></linearGradient></defs>${grid}
+  <path d="${area('i')}" fill="url(#ga)"/><path d="${area('o')}" fill="url(#gb)"/><path d="${path('i')}" fill="none" stroke="#62e3ae" stroke-width="2.4" stroke-linejoin="round"/><path d="${path('o')}" fill="none" stroke="#ff7a45" stroke-width="2.4" stroke-linejoin="round"/>
+  ${ser.map((s,i)=>`<circle cx="${x(i)}" cy="${y(s.i)}" r="3.5" fill="#0d0b0a" stroke="#62e3ae" stroke-width="2"><title>${mName(ms[i])}: έσοδα ${eur(s.i)}, έξοδα ${eur(s.o)}</title></circle>`).join('')}
+  ${ms.map((m,i)=>`<text x="${x(i)}" y="${H-6}" text-anchor="${i===0?'start':i===ms.length-1?'end':'middle'}" font-size="11.5" fill="rgba(246,241,236,.5)">${mName(m,{month:'short'})}</text>`).join('')}</svg>`};
+ draw();window._ro?.disconnect();window._ro=new ResizeObserver(draw);window._ro.observe(el)}
+
+function vProjects(){
+ const cols=[['idea','Ιδέες'],['waiting','Σε αναμονή'],['active','Ενεργά']];
+ return `<div class="acts"><button class="btn" data-act="add" data-kind="project">+ Νέο project</button></div>
+ <section class="board">${cols.map(([s,l])=>{const ps=projs().filter(p=>p.status===s);return `<div class="col glass" data-drop="${s}"><div class="colh"><i class="dot" style="color:${s==='active'?'#62e3ae':s==='waiting'?'#ffc75f':'#8fb5ff'};background:currentColor"></i>${l}<span>${ps.length}</span></div>${ps.map(p=>pcard(p,true)).join('')||empty('Σύρε ένα project εδώ.')}</div>`}).join('')}</section>`}
+
+function vProject(id){
+ const p=proj(id);if(!p)return `<section class="card glass">${empty('Το project δεν βρέθηκε.')}<a class="btn" href="#projects">Πίσω</a></section>`;
+ const ts=S.tasks.filter(t=>t.project===id),open=ts.filter(t=>!t.done),done=ts.filter(t=>t.done);
+ const l=S.all.filter(t=>t.project===id).sort((a,b)=>(b.date||'').localeCompare(a.date||'')),i=sum(l,'in'),o=sum(l,'out');
+ const ns=S.notes.filter(n=>n.project===id).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.created||0)-(a.created||0));
+ const ser=months(6).map(m=>mTot(m,id));let settle='';
+ if(p.partner){let d=0;l.filter(x=>x.type==='settle').forEach(x=>{d+=x.dir==='out'?+x.amount:-x.amount});l.filter(x=>x.type!=='settle'&&(x.by==='me'||x.by==='partner')).forEach(x=>{const v=x.type==='out'?+x.amount:-x.amount;d+=(x.by==='me'?v:0)-v*txShare(x)/100});
+  settle=`<div class="settle"><b>${Math.abs(d)<0.01?`Είσαι ίσος με ${esc(p.partner)}`:d>0?`${esc(p.partner)} σου χρωστάει ${eur(d)}`:`Χρωστάς ${eur(-d)} σε ${esc(p.partner)}`}</b><br><small>Με βάση το ποσοστό σου (${pShare(p)}%) σε κάθε κίνηση που πλήρωσε ή εισέπραξε προσωπικά ο καθένας, μείον τις εξοφλήσεις μεταξύ σας.</small></div>`}
+ return `<div><div class="hello" style="display:flex;align-items:center;gap:12px"><i class="dot" style="width:14px;height:14px;color:${color(id)};background:${color(id)}"></i>${esc(p.name)}</div>
+ <p class="lede">${STATUS[p.status]||''}${p.partner?' · με '+esc(p.partner):''}${p.desc?' · '+esc(p.desc):''}</p>
+ <div class="acts"><button class="btn" data-act="add" data-kind="task">+ Task</button><button class="btn" data-act="add" data-kind="tx" data-type="out">+ Έξοδο</button><button class="btn" data-act="add" data-kind="tx" data-type="in">+ Έσοδο</button><button class="btn" data-act="add" data-kind="note">+ Σημείωση</button><button class="btn" data-act="edit" data-kind="project" data-id="${esc(id)}">Επεξεργασία</button></div></div>
+ <section class="kpis"><div class="kpi glass"><div class="lab">Έσοδα συνολικά</div><strong class="pos">${eur(i)}</strong>${spark(ser.map(s=>s.i),'#62e3ae')}</div><div class="kpi glass"><div class="lab">Έξοδα συνολικά</div><strong>${eur(o)}</strong>${spark(ser.map(s=>s.o),'#ff8170')}</div>
+ <div class="kpi glass"><div class="lab">Ισοζύγιο<button class="sharebtn ${p.share==null?'unset':''}" data-act="share" data-id="${esc(id)}">${p.share==null?'Όρισε %':'Εσύ '+p.share+'%'}</button></div><strong class="${sgn(i-o)}">${eur(i-o)}</strong><small style="color:var(--mute)">Δικά σου: <b class="${sgn(sumMine(l,'in')-sumMine(l,'out'))}">${eur(sumMine(l,'in')-sumMine(l,'out'))}</b></small></div><div class="kpi glass"><div class="lab">Επόμενο βήμα</div><p style="margin:10px 0 0;font-weight:600">${p.next?esc(p.next):'<span style="color:var(--dim)">Δεν έχει οριστεί</span>'}</p></div></section>
+ <section class="grid"><div class="card glass"><div class="chead"><div><h2>Tasks</h2><p class="sub">${open.length} ανοιχτά · ${done.length} ολοκληρωμένα</p></div></div>${open.sort(byDue).map(x=>taskRow(x,false)).join('')||empty('Κανένα ανοιχτό task.')}
+ ${done.length?`<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--mute);font-size:13px">Ολοκληρωμένα (${done.length})</summary>${done.map(x=>taskRow(x,false)).join('')}</details>`:''}</div>
+ <div class="card glass"><div class="chead"><div><h2>Σημειώσεις</h2><p class="sub">Ιστορικό εξελίξεων</p></div></div>${ns.map(n=>`<div class="note"><small>${fmtD(n.date)} · <button class="tt" style="display:inline;padding:0;color:var(--dim);font-size:12.5px" data-act="edit" data-kind="note" data-id="${esc(n.id)}">αλλαγή</button></small><p>${esc(n.text)}</p></div>`).join('')||empty('Καμία σημείωση ακόμα.')}</div></section>
+ <section class="card glass"><div class="chead"><div><h2>Κινήσεις</h2><p class="sub">${l.length} καταχωρήσεις</p></div></div>${settle}${l.map(x=>txRow(x,false)).join('')||empty('Καμία κίνηση ακόμα.')}</section>`}
+
+function vTasks(){
+ const t=today(),all=S.tasks.filter(x=>S.tf==='all'||x.project===S.tf),open=all.filter(x=>!x.done),done=all.filter(x=>x.done),sp=S.tf==='all';
+ return `<div class="chips"><button class="chip ${sp?'on':''}" data-act="tf" data-id="all">Όλα</button>${projs().map(p=>`<button class="chip ${S.tf===p.id?'on':''}" data-act="tf" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join('')}</div>
+ <section class="card glass"><div class="chead"><div><h2>${sp?'Όλα τα tasks':esc(pname(S.tf))}</h2><p class="sub">${open.length} ανοιχτά</p></div><button class="btn" data-act="add" data-kind="task">+ Task</button></div>
+ ${tgroup('Καθυστερημένα',open.filter(x=>x.due&&x.due<t),sp)}${tgroup('Σήμερα',open.filter(x=>x.due===t),sp)}${tgroup('Επόμενα',open.filter(x=>x.due>t),sp)}${tgroup('Χωρίς ημερομηνία',open.filter(x=>!x.due),sp)}
+ ${open.length?'':empty('Δεν υπάρχουν ανοιχτά tasks εδώ.')}${done.length?`<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--mute);font-size:13px">Ολοκληρωμένα (${done.length})</summary>${done.sort((a,b)=>(b.doneAt||0)-(a.doneAt||0)).slice(0,40).map(x=>taskRow(x,sp)).join('')}</details>`:''}</section>`}
+
+function vMoney(){
+ const ml=S.all.filter(x=>(x.date||'').startsWith(S.month)),fl=ml.filter(x=>S.mf==='all'||x.project===S.mf).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ const i=sum(fl,'in'),o=sum(fl,'out'),pv=mTot(mShift(S.month,-1),S.mf==='all'?null:S.mf);
+ const per=projs().map(p=>{const l=ml.filter(x=>x.project===p.id);return{p,i:sum(l,'in'),o:sum(l,'out')}}).filter(r=>r.i||r.o),mx=Math.max(1,...per.map(r=>Math.max(r.i,r.o)));
+ return `<div class="acts" style="justify-content:space-between;align-items:center"><div class="month"><button class="icb" data-act="month" data-d="-1" aria-label="Προηγούμενος μήνας">‹</button><b>${mName(S.month)}</b><button class="icb" data-act="month" data-d="1" aria-label="Επόμενος μήνας">›</button></div>
+ <div style="display:flex;gap:8px"><button class="btn" data-act="add" data-kind="tx" data-type="out">+ Έξοδο</button><button class="btn" data-act="add" data-kind="tx" data-type="in">+ Έσοδο</button></div></div>
+ <div class="chips"><button class="chip ${S.mf==='all'?'on':''}" data-act="mf" data-id="all">Όλα</button>${projs().map(p=>`<button class="chip ${S.mf===p.id?'on':''}" data-act="mf" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join('')}</div>
+ <section class="kpis"><div class="kpi glass"><div class="lab">Έσοδα${chg(i,pv.i)}</div><strong class="pos">${eur(i)}</strong></div><div class="kpi glass"><div class="lab">Έξοδα${chg(o,pv.o)}</div><strong>${eur(o)}</strong></div>
+ <div class="kpi glass"><div class="lab">Καθαρό</div><strong class="${sgn(i-o)}">${eur(i-o)}</strong></div><div class="kpi glass"><div class="lab">Το καθαρό μου</div><strong class="${sgn(sumMine(fl,'in')-sumMine(fl,'out'))}">${eur(sumMine(fl,'in')-sumMine(fl,'out'))}</strong><small style="color:var(--mute)">Με βάση τα ποσοστά σου</small></div></section>
+ <section class="grid"><div class="card glass"><div class="chead"><div><h2>Κινήσεις μήνα</h2><p class="sub">Πάτα μια κίνηση για αλλαγή ή διαγραφή</p></div></div>${fl.map(x=>txRow(x,S.mf==='all')).join('')||empty('Καμία κίνηση αυτόν τον μήνα.')}</div>
+ <div class="card glass"><div class="chead"><div><h2>Ανά project</h2><p class="sub">Πράσινο: έσοδα · πορτοκαλί: έξοδα</p></div></div>${per.map(r=>`<div class="bar"><span>${esc(r.p.name)}</span><span><em style="width:${r.i/mx*100}%"></em><em style="width:${r.o/mx*100}%"></em></span><span class="num ${sgn(r.i-r.o)}" style="font-weight:700">${eur(r.i-r.o)}</span></div>`).join('')||empty('Δεν υπάρχουν κινήσεις αυτόν τον μήνα.')}</div></section>${vRec()}`}
+function vRec(){const now=today().slice(0,7),rs=S.rec.filter(r=>(S.mf==='all'||r.project===S.mf)&&(!r.end||r.end>=now)).sort((a,b)=>(b.amount||0)-(a.amount||0));
+ const o=sum(rs,'out'),mo=sumMine(rs,'out');
+ return `<section class="card glass" style="margin-bottom:16px"><div class="chead"><div><h2>Μηνιαία πάγια</h2><p class="sub">Συνδρομές και σταθερά ποσά που μπαίνουν αυτόματα κάθε μήνα</p></div>
+ <div style="text-align:right"><div class="big num neg" style="font-size:24px">${eur(o)}<small style="font-size:13px;color:var(--mute);font-weight:500"> / μήνα</small></div><small style="color:var(--mute)">Δικά σου: ${eur(mo)} / μήνα</small></div></div>
+ ${rs.map(r=>{const inc=r.type==='in';return `<button class="row" data-act="edit" data-kind="rec" data-id="${esc(r.id)}"><span class="ico" style="color:#8fb5ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span>
+ <span>${esc(r.desc||r.cat||'Μηνιαία κίνηση')}<small>${[esc(pname(r.project)),'από '+fmtD(r.start),r.end?'μέχρι '+mName(r.end):'χωρίς λήξη'].join(' · ')}</small></span>
+ <span class="num ${inc?'pos':'neg'}" style="text-align:right">${inc?'+':'−'}${eur(+r.amount)}${txShare(r)<100?`<small style="font-weight:500">δικά σου ${eur(mine(r))}</small>`:''}</span></button>`}).join('')||empty('Κανένα μηνιαίο πάγιο. Στη νέα καταχώρηση διάλεξε «Κάθε μήνα».')}</section>`}
+
+function vSearch(q){
+ const m=s=>String(s||'').toLowerCase().includes(q),ps=S.projects.filter(p=>m(p.name)||m(p.desc)||m(p.next)||m(p.partner)),ts=S.tasks.filter(t=>m(t.title)),xs=S.rec.filter(x=>m(x.desc)||m(x.cat)).map(r=>({...r,rid:r.id,date:r.start})).concat(S.tx.filter(x=>m(x.desc)||m(x.cat))),ns=S.notes.filter(n=>m(n.text));
+ const n=ps.length+ts.length+xs.length+ns.length;
+ return `<section class="card glass"><div class="chead"><div><h2>Αποτελέσματα για «${esc(q)}»</h2><p class="sub">${n} βρέθηκαν</p></div></div>
+ ${ps.length?`<div class="grp">Projects</div>${ps.map(p=>pcard(p)).join('')}`:''}${ts.length?`<div class="grp">Tasks</div>${ts.map(x=>taskRow(x)).join('')}`:''}
+ ${xs.length?`<div class="grp">Κινήσεις</div>${xs.map(x=>txRow(x)).join('')}`:''}${ns.length?`<div class="grp">Σημειώσεις</div>${ns.map(x=>`<a class="note" style="display:block" href="#p-${esc(x.project)}"><small>${fmtD(x.date)} · ${esc(pname(x.project))}</small><p>${esc(x.text)}</p></a>`).join('')}`:''}${n?'':empty('Δεν βρέθηκε τίποτα.')}</section>`}
+
+const route=()=>(location.hash||'#home').slice(1);
+function chrome(){
+ const r=route(),base=r.startsWith('p-')?'projects':r,t=today(),late=S.tasks.filter(x=>!x.done&&x.due&&x.due<=t).length;
+ const nl=(k,l,i,cls='')=>`<a href="#${k}" class="${base===k?'on':''}">${ico(i)}<span>${l}</span>${k==='tasks'&&late&&cls?`<b class="badge">${late}</b>`:''}</a>`;
+ $('nav').innerHTML=NAV.map(([k,l,i])=>nl(k,l,i,1)).join('');$('tabbar').innerHTML=NAV.map(([k,l,i])=>nl(k,l==='Επισκόπηση'?'Αρχική':l,i)).join('');
+ $('plist').innerHTML=projs().filter(p=>p.status==='active').map(p=>`<a class="plink" href="#p-${esc(p.id)}"><i class="dot" style="color:${color(p.id)};background:${color(p.id)}"></i>${esc(p.name)}</a>`).join('')||'<p class="empty" style="padding:6px 10px">Κανένα ακόμα</p>';
+ const c=mTot(t.slice(0,7)),tot=c.i+c.o;
+ $('meter').innerHTML=`<small><span>Καθαρό ${mName(t.slice(0,7),{month:'long'})}</span></small><b class="${sgn(c.i-c.o)}">${eur(c.i-c.o)}</b><div class="track"><span style="width:${tot?c.i/tot*100:0}%"></span></div><small style="margin-top:6px"><span>Έσοδα ${short(c.i)}</span><span>Έξοδα ${short(c.o)}</span></small>`;
+ const p=r.startsWith('p-')&&proj(r.slice(2));
+ $('ttl').textContent=S.q?'Αναζήτηση':p?'Project':({home:'Επισκόπηση',projects:'Projects',tasks:'Tasks',money:'Χρήματα'}[r]||'Επισκόπηση');
+ $('tsub').textContent=new Date().toLocaleDateString('el-GR',{weekday:'long',day:'numeric',month:'long'});
+}
+function render(){
+ chrome();if(!S.ready)return;const r=route();
+ app.innerHTML=S.q?vSearch(S.q):r.startsWith('p-')?vProject(r.slice(2)):r==='projects'?vProjects():r==='tasks'?vTasks():r==='money'?vMoney():vHome();
+ if(!S.q&&(r==='home'||r===''))drawFlow();
+}
+const curP=()=>{const r=route();return r.startsWith('p-')?r.slice(2):(r==='tasks'&&S.tf!=='all'?S.tf:r==='money'&&S.mf!=='all'?S.mf:'')};
+const projOpts=sel=>projs().map(p=>`<option value="${esc(p.id)}" ${p.id===sel?'selected':''}>${esc(p.name)}</option>`).join('');
+
+function openForm(kind,id,type){
+ const col={tx:'tx',rec:'rec',task:'tasks',note:'notes',project:'projects'}[kind],v=(id&&S[col].find(x=>x.id===id))||{},pid=v.project||curP()||projs()[0]?.id||'';
+ F={kind,id,col};let body='';
+ if(kind==='tx'||kind==='rec'){const ty=v.type||type||'out',pr=proj(pid),mo=kind==='rec';
+  body=`${id?'':`<div class="seg"><label><input type="radio" name="freq" value="once" ${mo?'':'checked'}><span>Μία φορά</span></label><label><input type="radio" name="freq" value="monthly" ${mo?'checked':''}><span>Κάθε μήνα</span></label></div>`}<div class="seg"><label><input type="radio" name="type" value="out" ${ty==='out'?'checked':''}><span>Έξοδο</span></label><label><input type="radio" name="type" value="in" ${ty==='in'?'checked':''}><span>Έσοδο</span></label><label><input type="radio" name="type" value="settle" ${ty==='settle'?'checked':''}><span>Εξόφληση</span></label></div>
+  <label class="os">Ποιος έδωσε σε ποιον<select name="dir"><option value="in" ${v.dir!=='out'?'selected':''}>${esc(pr?.partner||'Ο συνεργάτης')} μου έδωσε</option><option value="out" ${v.dir==='out'?'selected':''}>Εγώ έδωσα σε ${esc(pr?.partner||'συνεργάτη')}</option></select></label>
+  <div class="two"><label>Ποσό (€)<input name="amount" type="number" inputmode="decimal" step="0.01" min="0" required value="${esc(v.amount??'')}" placeholder="0,00"></label><label><span id="dl">${mo?'Ξεκινά από':'Ημερομηνία'}</span><input name="date" type="date" required value="${esc((mo?v.start:v.date)||today())}"></label></div>
+  <label id="endw" style="${mo?'':'display:none'}">Μέχρι (μήνας, προαιρετικό: άφησέ το κενό αν συνεχίζεται)<input name="end" type="month" value="${esc(v.end||'')}"></label>
+  <div class="two"><label>Project<select name="project" id="fp">${projOpts(pid)}</select></label><label class="ns">Το ποσοστό μου (%)<input name="share" id="fs" type="number" inputmode="decimal" min="0" max="100" step="0.5" required value="${esc(v.share??pShare(pr))}"></label></div>
+  <div class="mine ns" id="mine"></div>
+  <label>Περιγραφή<input name="desc" value="${esc(v.desc||'')}" placeholder="π.χ. κάρβουνα για την Ορά"></label>
+  <div class="two ns"><label>Κατηγορία<input name="cat" list="cats" value="${esc(v.cat||'')}" placeholder="Υλικά, Μεταφορικά…"></label><label>Ποιος πλήρωσε / εισέπραξε<select name="by"><option value="me">Εγώ</option><option value="partner" id="fpart">${esc(pr?.partner||'Συνεργάτης')}</option><option value="company">Εταιρεία</option></select></label></div>
+  <datalist id="cats">${[...new Set(['Υλικά','Μεταφορικά','Marketing','Άδειες','Εξοπλισμός','Καύσιμα','Πωλήσεις','Προμήθεια',...S.tx.map(x=>x.cat).filter(Boolean)])].map(c=>`<option value="${esc(c)}">`).join('')}</datalist>`}
+ else if(kind==='task')body=`<label>Τι πρέπει να γίνει<input name="title" required value="${esc(v.title||'')}" placeholder="π.χ. Τηλέφωνο στη bonÀrea"></label><label>Project<select name="project">${projOpts(pid)}</select></label>
+  <div class="two"><label>Μέχρι<input name="due" type="date" value="${esc(v.due||'')}"></label><label>Προτεραιότητα<select name="prio"><option value="normal">Κανονική</option><option value="high" ${v.prio==='high'?'selected':''}>Υψηλή</option></select></label></div>`;
+ else if(kind==='note')body=`<label>Project<select name="project">${projOpts(pid)}</select></label><label>Σημείωση<textarea name="text" rows="5" required placeholder="Τι έγινε, τι συμφωνήθηκε…">${esc(v.text||'')}</textarea></label>`;
+ else body=`<label>Όνομα<input name="name" required value="${esc(v.name||'')}"></label>
+  <label>Στάδιο</label><div class="seg" style="margin-top:-8px">${['idea','waiting','active'].map(k=>`<label><input type="radio" name="status" value="${k}" ${(v.status||'idea')===k?'checked':''}><span>${STATUS[k]}</span></label>`).join('')}</div>
+  <div class="two"><label>Συνεργάτης<input name="partner" value="${esc(v.partner||'')}"></label><label>Το ποσοστό μου (%)<input name="share" type="number" inputmode="decimal" min="0" max="100" step="0.5" value="${esc(v.share??'')}" placeholder="π.χ. 50"></label></div><div class="two"><label>Επόμενο βήμα<input name="next" value="${esc(v.next||'')}"></label></div><label>Περιγραφή<textarea name="desc" rows="3">${esc(v.desc||'')}</textarea></label>`;
+ const T={rec:['μηνιαία κίνηση','Επαναλαμβάνεται αυτόματα κάθε μήνα'],tx:['κίνηση','Έξοδο ή έσοδο για ένα project'],task:['task','Κάτι που πρέπει να γίνει'],note:['σημείωση','Ενημέρωση για την πορεία ενός project'],project:['project','Ένα νέο venture ή ιδέα']}[kind];
+ const pick=!id&&kind!=='project'?`<div class="chips" style="margin:0;padding:0">${['tx','task','note'].map(k=>`<button type="button" class="chip ${k===kind?'on':''}" data-act="switch" data-kind="${k}">${{tx:'Χρήματα',task:'Task',note:'Σημείωση'}[k]}</button>`).join('')}</div>`:'';
+ dlg.innerHTML=`<form id="frm" class="glass"><h2>${id?'Αλλαγή':'Νέα καταχώρηση:'} ${T[0]}</h2><p class="sub">${T[1]}</p>${pick}${body}${kind==='rec'&&id?'<p class="sub" style="margin:0">Για να σταματήσει, βάλε μήνα στο «Μέχρι»: οι προηγούμενοι μήνες μένουν. Η «Διαγραφή» σβήνει και όλους τους προηγούμενους μήνες.</p>':''}
+ <div class="fb">${id?'<button type="button" class="btn red" data-act="del">Διαγραφή</button>':''}<button type="button" class="btn" data-act="close">Άκυρο</button><button class="cta">${id?'Αποθήκευση':'Δημιουργία'}</button></div></form>`;
+ if(kind==='tx'||kind==='rec'){const q=n=>dlg.querySelector(n);
+  dlg.querySelectorAll('[name=freq]').forEach(el=>el.addEventListener('change',()=>{const m=q('[name=freq]:checked').value==='monthly';q('#endw').style.display=m?'':'none';q('#dl').textContent=m?'Ξεκινά από':'Ημερομηνία';calc()}));q('[name=by]').value=v.by||'me';
+  const calc=()=>{const a=parseFloat(String(q('[name=amount]').value).replace(',','.'))||0,sh=Math.min(100,Math.max(0,parseFloat(q('#fs').value)||0)),out=q('[name=type]:checked').value==='out',pr=proj(q('#fp').value),pn=pr?.partner||'οι συνεργάτες',m=a*sh/100;
+   q('#frm').classList.toggle('settle',q('[name=type]:checked').value==='settle');const mo=kind==='rec'||q('[name=freq]:checked')?.value==='monthly';q('#mine').innerHTML=a?`${mo?'<small style="color:#8fb5ff;font-weight:700">↻ Θα μπαίνει αυτόματα κάθε μήνα</small><br>':''}<small>${out?'Από το σύνολο σού αναλογεί να πληρώσεις':'Από το σύνολο σού αναλογούν'}${mo?' κάθε μήνα':''}</small><b>${eur(m)}</b><small>${sh<100?`${esc(pn)}: ${eur(a-m)} (${100-sh}%)`:'Όλο το ποσό είναι δικό σου'}</small>`:(mo?'<small style="color:#8fb5ff;font-weight:700">↻ Θα μπαίνει αυτόματα κάθε μήνα</small><br>':'')+'<small>Γράψε το συνολικό ποσό και θα δεις πόσο σου αναλογεί.</small>'};
+  q('#fp').onchange=e=>{const pr=proj(e.target.value);q('#fpart').textContent=pr?.partner||'Συνεργάτης';const o=q('[name=dir]').options;o[0].textContent=(pr?.partner||'Ο συνεργάτης')+' μου έδωσε';o[1].textContent='Εγώ έδωσα σε '+(pr?.partner||'συνεργάτη');q('#fs').value=pShare(pr);calc()};
+  dlg.querySelectorAll('[name=amount],#fs,[name=type]').forEach(el=>el.addEventListener('input',calc));calc()}
+ dlg.querySelector('#frm').onsubmit=submit;if(!dlg.open)dlg.showModal();
+}
+function openShare(id){const p=proj(id);if(!p)return;F={kind:'share',id,col:'projects'};
+ dlg.innerHTML=`<form id="frm" class="glass"><h2>Το ποσοστό μου στο ${esc(p.name)}</h2><p class="sub">Χρησιμοποιείται σε κάθε νέα κίνηση για να βγαίνει τι αναλογεί σε σένα.</p>
+ <label>Το ποσοστό μου (%)<input name="share" id="ss" type="number" inputmode="decimal" min="0" max="100" step="0.5" required value="${esc(p.share??pShare(p))}"></label>
+ <div class="mine" id="sm"></div><div class="fb"><button type="button" class="btn" data-act="close">Άκυρο</button><button class="cta">Αποθήκευση</button></div></form>`;
+ const sm=()=>{const v=Math.min(100,Math.max(0,parseFloat(dlg.querySelector('#ss').value)||0));dlg.querySelector('#sm').innerHTML=`<small>Εσύ</small><b>${v}%</b><small>${esc(p.partner||'Οι συνεργάτες')}: ${100-v}%</small>`};
+ dlg.querySelector('#ss').addEventListener('input',sm);sm();
+ dlg.querySelector('#frm').onsubmit=async e=>{e.preventDefault();const v=Math.min(100,Math.max(0,parseFloat(dlg.querySelector('#ss').value)||0));dlg.close();
+  try{await db.collection('projects').doc(id).update({share:v});toast(`${p.name}: το ποσοστό σου είναι ${v}%`)}catch{toast('Δεν αποθηκεύτηκε.')}};
+ if(!dlg.open)dlg.showModal();dlg.querySelector('#ss').select()}
+async function submit(e){
+ e.preventDefault();const d=Object.fromEntries(new FormData(e.target));let {kind,col}=F;if(kind==='tx'&&d.freq==='monthly'){kind='rec';col='rec'}let id=F.id;const old=(id&&S[col].find(x=>x.id===id))||{};let body;
+ if((kind==='tx'||kind==='rec')&&d.type==='settle')body={type:'settle',dir:d.dir,amount:Math.round(parseFloat(String(d.amount).replace(',','.'))*100)/100,...(kind==='rec'?{start:d.date,end:d.end||''}:{date:d.date}),project:d.project,desc:d.desc.trim()};
+ else if(kind==='tx'||kind==='rec')body={type:d.type,amount:Math.round(parseFloat(String(d.amount).replace(',','.'))*100)/100,...(kind==='rec'?{start:d.date,end:d.end||''}:{date:d.date}),project:d.project,desc:d.desc.trim(),cat:d.cat.trim(),by:d.by,share:Math.min(100,Math.max(0,parseFloat(d.share)||0))};
+ else if(kind==='task')body={title:d.title.trim(),project:d.project,due:d.due,prio:d.prio,done:!!old.done,doneAt:old.doneAt||0};
+ else if(kind==='note')body={project:d.project,text:d.text.trim(),date:old.date||today()};
+ else if(kind==='project'){body={name:d.name.trim(),status:d.status,partner:d.partner.trim(),next:d.next.trim(),desc:d.desc.trim()};if(d.share!=='')body.share=Math.min(100,Math.max(0,parseFloat(d.share)||0))}
+ if((kind==='tx'||kind==='rec')&&!(body.amount>0))return toast('Βάλε ποσό μεγαλύτερο από 0');
+ if(kind!=='project'&&!body.project)return toast('Φτιάξε πρώτα ένα project');
+ if(!id)id=kind==='project'?'p'+Date.now().toString(36):db.collection(col).doc().id;
+ body.created=old.created||Date.now();dlg.close();
+ if(await save(col,id,body)){toast(F.id?'Αποθηκεύτηκε':kind==='rec'?'Θα μπαίνει αυτόματα κάθε μήνα':'Προστέθηκε');if(kind==='project'&&!F.id)location.hash='p-'+id}
+}
+async function save(col,id,body){try{await db.collection(col).doc(id).set(body);return true}catch(e){toast(e&&e.code==='quota_exceeded'?'Ο χώρος γέμισε.':'Δεν αποθηκεύτηκε. Δοκίμασε ξανά.');return false}}
+let tT;function toast(t,undo){const el=$('toast');el.querySelector('span').textContent=t;const b=el.querySelector('button');b.style.display=undo?'':'none';b.onclick=()=>{undo();el.style.display='none'};el.style.display='flex';clearTimeout(tT);tT=setTimeout(()=>el.style.display='none',5000)}
+
+document.addEventListener('click',async e=>{
+ const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,id=b.dataset.id;
+ if(a==='add'){if(!db)return toast('Η αποθήκευση δεν είναι διαθέσιμη.');openForm(!S.projects.length?'project':(b.dataset.kind||'tx'),null,b.dataset.type)}
+ else if(a==='share'){e.preventDefault();e.stopPropagation();if(db)openShare(id)}
+ else if(a==='switch')openForm(b.dataset.kind);else if(a==='edit'){e.preventDefault();openForm(b.dataset.kind,id)}else if(a==='close')dlg.close();
+ else if(a==='toggle'){const t=S.tasks.find(x=>x.id===id);if(t)try{await db.collection('tasks').doc(id).update({done:!t.done,doneAt:t.done?0:Date.now()})}catch{toast('Δεν αποθηκεύτηκε.')}}
+ else if(a==='del'){const {col,id:did}=F,old=S[col].find(x=>x.id===did);if(!old)return;const {id:_,...keep}=old;dlg.close();
+  try{await db.collection(col).doc(did).delete();if(col==='projects')location.hash='projects';toast('Διαγράφηκε',()=>save(col,did,keep))}catch{toast('Δεν διαγράφηκε.')}}
+ else if(a==='tf'){S.tf=id;render()}else if(a==='mf'){S.mf=id;render()}else if(a==='month'){S.month=mShift(S.month,+b.dataset.d);render()}
+ else if(a==='bg')$('bgfile').click();
+ else if(a==='settings')APP.settings(dlg,toast);
+});
+document.addEventListener('dragstart',e=>{const c=e.target.closest('[data-pid]');if(c){e.dataTransfer.setData('text/plain',c.dataset.pid);e.dataTransfer.effectAllowed='move'}});
+document.addEventListener('dragover',e=>{const c=e.target.closest('[data-drop]');if(c){e.preventDefault();document.querySelectorAll('.col.over').forEach(x=>x!==c&&x.classList.remove('over'));c.classList.add('over')}});
+document.addEventListener('dragleave',e=>{const c=e.target.closest('[data-drop]');if(c&&!c.contains(e.relatedTarget))c.classList.remove('over')});
+document.addEventListener('drop',async e=>{const c=e.target.closest('[data-drop]');if(!c)return;e.preventDefault();c.classList.remove('over');const pid=e.dataTransfer.getData('text/plain'),p=proj(pid);
+ if(p&&p.status!==c.dataset.drop)try{await db.collection('projects').doc(pid).update({status:c.dataset.drop});toast(`${p.name}: ${STATUS[c.dataset.drop]}`)}catch{toast('Δεν αποθηκεύτηκε.')}});
+$('q').addEventListener('input',e=>{S.q=e.target.value.trim().toLowerCase();render()});
+window.addEventListener('hashchange',()=>{if(S.q){S.q='';$('q').value=''}render();scrollTo(0,0)});
+function applyBg(){let u=null;try{u=localStorage.getItem('bg')}catch{}const s=$('scene');s.classList.toggle('photo',!!u);s.style.backgroundImage=u?`url("${u}")`:''}
+$('bgfile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{const k=Math.min(1,1800/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=img.width*k;c.height=img.height*k;c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+ let prev=null;try{prev=localStorage.getItem('bg')}catch{}try{localStorage.setItem('bg',c.toDataURL('image/jpeg',.8));applyBg();toast('Το φόντο άλλαξε σε αυτή τη συσκευή',()=>{try{prev?localStorage.setItem('bg',prev):localStorage.removeItem('bg')}catch{}applyBg()})}catch{toast('Η εικόνα δεν αποθηκεύτηκε σε αυτή τη συσκευή')}URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f);e.target.value=''});
+applyBg();
+
+if(CFG.env==='dev')$('envtag').innerHTML='<span class="envtag">DEV</span>';
+APP.start(d=>{db=d;
+ COLS.forEach(c=>db.collection(c).onSnapshot(s=>{S[c]=s.docs.map(x=>({id:x.id,...x.data()}));recon();S.ready=true;if(!dlg.open)render()}));
+ dlg.addEventListener('close',render);render();
+},e=>{msg.textContent='Πρόβλημα φόρτωσης δεδομένων: '+(e.message||e);S.ready=true;render()});
+render();
+}
+</script>
+</body></html>
