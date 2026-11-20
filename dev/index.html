@@ -83,7 +83,7 @@ aside{position:sticky;top:18px;height:calc(100vh - 36px);display:flex;flex-direc
 .grp{font-size:12px;color:var(--dim);font-weight:600;margin:14px 0 2px}.grp:first-child{margin-top:0}
 .pcard{display:block;padding:14px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid var(--line);margin-bottom:10px;transition:.2s;cursor:pointer}
 .pcard:hover{background:rgba(255,255,255,.08);border-color:var(--edge);transform:translateY(-2px)}
-.pcard .t{display:flex;align-items:center;gap:9px;font-weight:700}.pcard p{margin:6px 0 10px;color:var(--mute);font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pcard .t{display:flex;align-items:center;gap:9px;font-weight:700}.xbtn{margin-left:auto;flex:none;width:34px;height:34px;border-radius:10px;border:1px solid transparent;background:none;color:var(--dim);cursor:pointer;display:grid;place-items:center}.xbtn:hover{color:var(--bad);border-color:rgba(255,129,112,.4);background:rgba(255,129,112,.1)}.xbtn svg{width:17px}.pcard p{margin:6px 0 10px;color:var(--mute);font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pmeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12.5px;color:var(--mute)}
 .mini{width:24px;height:24px;font-size:10.5px}
 .sharebtn{border:1px solid rgba(255,155,84,.45);background:rgba(255,106,61,.12);color:var(--acc2);border-radius:999px;padding:0 11px;height:30px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}.sharebtn.unset{border-style:dashed}.sharebtn:hover{background:rgba(255,106,61,.22)}
@@ -170,7 +170,7 @@ dialog .chip.on{background:linear-gradient(135deg,var(--acc2),var(--acc));color:
 <input type="file" id="bgfile" accept="image/*" hidden>
 <dialog id="dlg"></dialog>
 <div id="toast" class="glass"><span></span><button type="button">Αναίρεση</button></div>
-<script src="data.js?v=5"></script>
+<script src="data.js?v=6"></script>
 <script>
 {
 const $=id=>document.getElementById(id),app=$('app'),dlg=$('dlg'),msg=$('msg');
@@ -228,7 +228,7 @@ function txRow(x,showP=true){
  <span class="num ${inc?'pos':'neg'}" style="text-align:right">${inc?'+':'−'}${eur(+x.amount)}${txShare(x)<100?`<small style="font-weight:500">δικά σου ${eur(mine(x))}</small>`:''}</span></button>`}
 function pcard(p,drag){
  const open=S.tasks.filter(t=>t.project===p.id&&!t.done).length,l=S.all.filter(t=>t.project===p.id),bal=sum(l,'in')-sum(l,'out');
- return `<a class="pcard" href="#p-${esc(p.id)}" ${drag?`draggable="true" data-pid="${esc(p.id)}"`:''}><div class="t"><i class="dot" style="color:${color(p.id)};background:${color(p.id)}"></i>${esc(p.name)}</div>
+ return `<a class="pcard" href="#p-${esc(p.id)}" ${drag?`draggable="true" data-pid="${esc(p.id)}"`:''}><div class="t"><i class="dot" style="color:${color(p.id)};background:${color(p.id)}"></i>${esc(p.name)}${drag?`<button class="xbtn" data-act="pdel" data-id="${esc(p.id)}" aria-label="Διαγραφή project" title="Διαγραφή"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>`:''}</div>
  <p>${p.next?'Επόμενο: '+esc(p.next):esc(p.desc||'Χωρίς περιγραφή ακόμα')}</p>
  <div class="pmeta">${p.partner?`<span class="av mini" title="${esc(p.partner)}">${esc(initials(p.partner))}</span>`:''}<span>${open} ${open===1?'task':'tasks'}</span><button class="sharebtn ${p.share==null?'unset':''}" data-act="share" data-id="${esc(p.id)}">${p.share==null?'Όρισε το ποσοστό σου':'Εσύ '+p.share+'%'}</button><span class="num ${sgn(bal)}" style="margin-left:auto;font-weight:700" title="Σύνολο project">${bal?eur(bal):'—'}</span></div></a>`}
 
@@ -338,6 +338,15 @@ function render(){
 const curP=()=>{const r=route();return r.startsWith('p-')?r.slice(2):(r==='tasks'&&S.tf!=='all'?S.tf:r==='money'&&S.mf!=='all'?S.mf:'')};
 const projOpts=sel=>projs().map(p=>`<option value="${esc(p.id)}" ${p.id===sel?'selected':''}>${esc(p.name)}</option>`).join('');
 
+function projDocs(pid){return [['tasks',S.tasks],['tx',S.tx],['notes',S.notes],['rec',S.rec]].flatMap(([c,l])=>l.filter(x=>x.project===pid).map(x=>[c,x]))}
+function askDelProject(pid){const p=proj(pid);if(!p)return;const d=projDocs(pid),n=c=>d.filter(x=>x[0]===c).length;
+ const parts=[n('tasks')&&`${n('tasks')} ${n('tasks')===1?'task':'tasks'}`,(n('tx')+n('rec'))&&`${n('tx')+n('rec')} ${n('tx')+n('rec')===1?'κίνηση':'κινήσεις'}`,n('notes')&&`${n('notes')} ${n('notes')===1?'σημείωση':'σημειώσεις'}`].filter(Boolean);
+ dlg.innerHTML=`<form class="glass" onsubmit="return false"><h2>Διαγραφή «${esc(p.name)}»;</h2><p class="sub">${parts.length?`Θα σβηστούν μαζί και ${parts.join(', ')} του project.`:'Το project δεν έχει tasks, κινήσεις ή σημειώσεις.'} Αν το μετανιώσεις, θα έχεις λίγα δευτερόλεπτα για «Αναίρεση».</p>
+ <div class="fb"><button type="button" class="btn" data-act="close">Άκυρο</button><button type="button" class="btn red" style="background:rgba(255,129,112,.15)" data-act="pdelok" data-id="${esc(pid)}">Διαγραφή</button></div></form>`;
+ if(!dlg.open)dlg.showModal()}
+async function delProject(pid){const p=proj(pid);if(!p)return;const all=[['projects',p],...projDocs(pid)].map(([c,x])=>{const {id,...keep}=x;return [c,id,keep]});
+ try{for(const [c,id] of all)await db.collection(c).doc(id).delete();if(route()==='p-'+pid)location.hash='projects';
+  toast(`Το «${p.name}» διαγράφηκε`,async()=>{for(const [c,id,keep] of all)await save(c,id,keep);toast('Επαναφέρθηκε')})}catch{toast('Δεν διαγράφηκε όλο. Δοκίμασε ξανά.')}}
 function openForm(kind,id,type){
  const col={tx:'tx',rec:'rec',task:'tasks',note:'notes',project:'projects'}[kind],v=(id&&S[col].find(x=>x.id===id))||{},pid=v.project||curP()||projs()[0]?.id||'';
  F={kind,id,col};let body='';
@@ -400,6 +409,9 @@ document.addEventListener('click',async e=>{
  else if(a==='share'){e.preventDefault();e.stopPropagation();if(db)openShare(id)}
  else if(a==='switch')openForm(b.dataset.kind);else if(a==='edit'){e.preventDefault();openForm(b.dataset.kind,id)}else if(a==='close')dlg.close();
  else if(a==='toggle'){const t=S.tasks.find(x=>x.id===id);if(t)try{await db.collection('tasks').doc(id).update({done:!t.done,doneAt:t.done?0:Date.now()})}catch{toast('Δεν αποθηκεύτηκε.')}}
+ else if(a==='pdel'){e.preventDefault();e.stopPropagation();askDelProject(id)}
+ else if(a==='pdelok'){dlg.close();delProject(id)}
+ else if(a==='del'&&F.col==='projects'){askDelProject(F.id)}
  else if(a==='del'){const {col,id:did}=F,old=S[col].find(x=>x.id===did);if(!old)return;const {id:_,...keep}=old;dlg.close();
   try{await db.collection(col).doc(did).delete();if(col==='projects')location.hash='projects';toast('Διαγράφηκε',()=>save(col,did,keep))}catch{toast('Δεν διαγράφηκε.')}}
  else if(a==='tf'){S.tf=id;render()}else if(a==='mf'){S.mf=id;render()}else if(a==='month'){S.month=mShift(S.month,+b.dataset.d);render()}
