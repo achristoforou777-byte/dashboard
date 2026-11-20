@@ -23,7 +23,22 @@
     const sig = JSON.stringify(rows); if (sig === last) return; last = sig;
     COLS.forEach(c => store[c] = new Map());
     rows.forEach(r => put(r.col, r.id, r.data));
-    COLS.forEach(emit);
+    COLS.forEach(emit); avatar();
+  }
+  function avatar() {
+    const u = store.settings?.get('profile')?.avatar;
+    document.querySelectorAll('.me .av, .avbtn .av').forEach(el => { el.style.backgroundImage = u ? `url("${u}")` : ''; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; el.textContent = u ? '' : 'ΑΧ' });
+  }
+  function pickPhoto(toast) {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+    inp.onchange = () => { const f = inp.files[0]; if (!f) return; const img = new Image(); img.onload = async () => {
+      const s = Math.min(img.width, img.height), c = document.createElement('canvas'); c.width = c.height = 160;
+      c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 160, 160);
+      const url = c.toDataURL('image/jpeg', .85), prof = { ...(store.settings?.get('profile') || {}), avatar: url };
+      put('settings', 'profile', prof); avatar();
+      const { error } = await sb.from('dash_docs').upsert({ col: 'settings', id: 'profile', data: prof, updated_at: new Date().toISOString() });
+      toast(error ? 'Η φωτογραφία δεν αποθηκεύτηκε' : 'Η φωτογραφία άλλαξε'); URL.revokeObjectURL(img.src) }; img.src = URL.createObjectURL(f) };
+    inp.click();
   }
   function docRef(c, id) {
     return {
@@ -90,12 +105,13 @@
     }[st];
     dlg.innerHTML = `<form class="glass" onsubmit="return false"><h2>Ρυθμίσεις</h2>${C.env === 'dev' ? '<p class="sub"><b style="color:#ffc75f">ΔΟΚΙΜΑΣΤΙΚΗ ΕΚΔΟΣΗ</b></p>' : ''}
       <div class="sbox"><b>Ειδοποιήσεις</b>${push}</div>
-      <div class="fb" style="justify-content:flex-start"><button type="button" class="btn" data-act="bg">Αλλαγή φόντου</button><button type="button" class="btn" id="exp">Εξαγωγή δεδομένων</button><button type="button" class="btn red" id="out">Κλείδωμα συσκευής</button></div>
+      <div class="fb" style="justify-content:flex-start"><button type="button" class="btn" id="photo">Αλλαγή φωτογραφίας</button><button type="button" class="btn" data-act="bg">Αλλαγή φόντου</button><button type="button" class="btn" id="exp">Εξαγωγή δεδομένων</button><button type="button" class="btn red" id="out">Κλείδωμα συσκευής</button></div>
       <div class="fb"><button type="button" class="btn" data-act="close">Κλείσιμο</button></div></form>`;
     const q = s => dlg.querySelector(s);
     q('#pon')?.addEventListener('click', async () => { try { await enablePush(); toast('Οι ειδοποιήσεις ενεργοποιήθηκαν'); settings(dlg, toast) } catch (e) { toast(e.message === 'denied' ? 'Δεν δόθηκε άδεια. Άλλαξέ το από Ρυθμίσεις iPhone → Ειδοποιήσεις.' : 'Δεν ενεργοποιήθηκαν: ' + e.message) } });
     q('#poff')?.addEventListener('click', async () => { await disablePush(); toast('Οι ειδοποιήσεις απενεργοποιήθηκαν'); settings(dlg, toast) });
     q('#ptest')?.addEventListener('click', async () => { const { data, error } = await sb.functions.invoke('dash-push', { body: { test: true } }); toast(error ? 'Αποτυχία αποστολής' : data?.sent ? 'Στάλθηκε, κοίτα την οθόνη σου' : 'Δεν βρέθηκε συσκευή, ενεργοποίησε ξανά') });
+    q('#photo').addEventListener('click', () => pickPhoto(toast));
     q('#exp').addEventListener('click', () => { const o = { exported: new Date().toISOString() }; COLS.forEach(c => o[c] = [...(store[c] || new Map()).entries()].map(([id, d]) => ({ id, ...d }))); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' })); a.download = `pinakas-${new Date().toISOString().slice(0, 10)}.json`; a.click(); toast('Το αρχείο κατέβηκε') });
     q('#out').addEventListener('click', () => { setKey(null); location.reload() });
     if (!dlg.open) dlg.showModal();
