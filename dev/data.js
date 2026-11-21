@@ -128,7 +128,7 @@
   }
   async function start(ready, error) {
     onReady = ready; onError = error;
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && booted) loadAll().catch(() => {}) });
     const k = getKey();
     if (k) {

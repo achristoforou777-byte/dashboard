@@ -1,6 +1,12 @@
 // Service worker: shows the daily task notification and opens the app when tapped.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+// Always check the server for a newer page, so updates show up right away.
+self.addEventListener('fetch', e => {
+  const r = e.request;
+  if (r.method !== 'GET' || new URL(r.url).origin !== location.origin) return;
+  e.respondWith(fetch(r, { cache: 'no-cache' }).catch(() => fetch(r)));
+});
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data.json() } catch { d = { title: 'ACH Work', body: e.data ? e.data.text() : '' } }
