@@ -29,7 +29,7 @@
   const prof = () => store.settings?.get('profile') || {};
   function avatar() {
     const u = store.settings?.get('profile')?.avatar;
-    document.querySelectorAll('.me .av, .avbtn .av, .brandlogo').forEach(el => { el.style.backgroundImage = u ? `url("${u}")` : ''; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; el.textContent = u ? '' : (el.classList.contains('brandlogo') ? 'AC' : 'ΑΧ') });
+    document.querySelectorAll('.me .av, .avbtn .av').forEach(el => { el.style.backgroundImage = u ? `url("${u}")` : ''; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; el.textContent = u ? '' : 'ΑΧ' });
   }
   function pickPhoto(toast) {
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
@@ -55,8 +55,8 @@
   // ---------- access code screen ----------
   const lock = document.getElementById('auth');
   function lockView(first, note = '') {
-    lock.innerHTML = `<form class="authcard glass" id="af"><span class="logo" style="width:54px;height:54px;font-size:20px;border-radius:16px">AC</span>
-      <h2>${first ? 'Όρισε κωδικό πρόσβασης' : 'ACH Work'}</h2>
+    lock.innerHTML = `<form class="authcard glass" id="af"><img src="icon.svg" alt="" style="width:58px;height:58px;border-radius:16px">
+      <h2>${first ? 'Όρισε κωδικό πρόσβασης' : 'uphill.cy'}</h2>
       <p class="sub">${first ? 'Διάλεξε έναν κωδικό (τουλάχιστον 8 χαρακτήρες). Θα τον γράφεις μία φορά σε κάθε συσκευή σου, iPhone και Mac.' : 'Γράψε τον κωδικό πρόσβασης. Θα σου τον ζητήσει μόνο αυτή τη φορά σε αυτή τη συσκευή.'}</p>
       <label>Κωδικός πρόσβασης<input name="k" type="password" autocomplete="${first ? 'new-password' : 'current-password'}" minlength="${first ? 8 : 6}" required></label>
       ${first ? '<label>Ξανά τον ίδιο κωδικό<input name="k2" type="password" autocomplete="new-password" minlength="8" required></label>' : ''}

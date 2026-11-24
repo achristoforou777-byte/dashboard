@@ -4,12 +4,12 @@
 <meta name="theme-color" content="#0d0b0a">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" href="icon-192.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="alternate icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ACH Work">
-<title>ACH Work</title>
+<meta name="apple-mobile-web-app-title" content="uphill.cy">
+<title>uphill.cy</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* VOICE: a private command centre: quiet, premium, nocturnal.
@@ -185,12 +185,13 @@ a.pos2:hover{background:rgba(255,255,255,.05)}.pos2:last-child{border-bottom:0}.
 .vseg span{padding:8px 14px}
 @media(max-width:1200px){.week{grid-template-columns:minmax(0,1fr)}.wday{min-height:0}.wdl .row{grid-template-columns:44px minmax(0,1fr) auto}.wdl .row .ico{display:grid}}
 @media(max-width:600px){.pgrid{grid-template-columns:minmax(0,1fr)}.pcn b{font-size:16px}.pcn>div{padding:10px 8px}.kpis.k3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.blogo{width:38px;height:38px;border-radius:11px;flex:none;box-shadow:0 6px 18px -6px rgba(0,0,0,.6)}.bname{display:flex;flex-direction:column;line-height:1.15}.bname small{white-space:nowrap;font-size:11px;font-weight:500;color:var(--mute);letter-spacing:.02em}
 </style><script src="config.js?v=3"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js"></script></head><body>
 <div id="auth"></div>
 <div class="scene" id="scene"><i></i><i></i><i></i><i></i></div>
 <div class="shell">
 <aside class="glass">
- <div class="brand"><span class="logo brandlogo">AC</span>ACH Work<span id="envtag"></span></div>
+ <div class="brand"><img class="blogo" src="icon.svg" alt=""><span class="bname">uphill.cy<small>group of companies</small></span></div>
  <div class="sec">Χώρος εργασίας</div>
  <nav class="nav" id="nav"></nav>
  <div class="sec">Ενεργά projects</div>
@@ -210,7 +211,7 @@ a.pos2:hover{background:rgba(255,255,255,.05)}.pos2:last-child{border-bottom:0}.
 <input type="file" id="bgfile" accept="image/*" hidden>
 <dialog id="dlg"></dialog>
 <div id="toast" class="glass"><span></span><button type="button">Αναίρεση</button></div>
-<script src="data.js?v=9"></script>
+<script src="data.js?v=10"></script>
 <script>
 {
 const $=id=>document.getElementById(id),app=$('app'),dlg=$('dlg'),msg=$('msg');
@@ -519,7 +520,7 @@ $('bgfile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return
  let prev=null;try{prev=localStorage.getItem('bg')}catch{}try{localStorage.setItem('bg',c.toDataURL('image/jpeg',.8));applyBg();toast('Το φόντο άλλαξε σε αυτή τη συσκευή',()=>{try{prev?localStorage.setItem('bg',prev):localStorage.removeItem('bg')}catch{}applyBg()})}catch{toast('Η εικόνα δεν αποθηκεύτηκε σε αυτή τη συσκευή')}URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f);e.target.value=''});
 applyBg();
 
-if(CFG.env==='dev')$('envtag').innerHTML='<span class="envtag">DEV</span>';
+if(CFG.env==='dev')document.querySelector('.bname').insertAdjacentHTML('beforeend','<span class="envtag" style="margin:4px 0 0;align-self:flex-start">DEV</span>');
 APP.start(d=>{db=d;
  COLS.forEach(c=>db.collection(c).onSnapshot(s=>{S[c]=s.docs.map(x=>{const o={id:x.id,...x.data()};if(o.type==='invest'){o.type='out';o.by='me'}return o});recon();S.ready=true;if(!dlg.open)render()}));
  dlg.addEventListener('close',render);render();
