@@ -25,9 +25,11 @@
     rows.forEach(r => put(r.col, r.id, r.data));
     COLS.forEach(emit); avatar();
   }
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const prof = () => store.settings?.get('profile') || {};
   function avatar() {
     const u = store.settings?.get('profile')?.avatar;
-    document.querySelectorAll('.me .av, .avbtn .av, .brandlogo').forEach(el => { el.style.backgroundImage = u ? `url("${u}")` : ''; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; el.textContent = u ? '' : (el.classList.contains('brandlogo') ? 'AC' : 'ΑΧ') });
+    document.querySelectorAll('.me .av, .avbtn .av').forEach(el => { el.style.backgroundImage = u ? `url("${u}")` : ''; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; el.textContent = u ? '' : 'ΑΧ' });
   }
   function pickPhoto(toast) {
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
@@ -53,8 +55,8 @@
   // ---------- access code screen ----------
   const lock = document.getElementById('auth');
   function lockView(first, note = '') {
-    lock.innerHTML = `<form class="authcard glass" id="af"><span class="logo" style="width:54px;height:54px;font-size:20px;border-radius:16px">AC</span>
-      <h2>${first ? 'Όρισε κωδικό πρόσβασης' : 'ACH Work'}</h2>
+    lock.innerHTML = `<form class="authcard glass" id="af"><img src="icon.svg" alt="" style="width:58px;height:58px;border-radius:16px">
+      <h2>${first ? 'Όρισε κωδικό πρόσβασης' : 'uphill.cy'}</h2>
       <p class="sub">${first ? 'Διάλεξε έναν κωδικό (τουλάχιστον 8 χαρακτήρες). Θα τον γράφεις μία φορά σε κάθε συσκευή σου, iPhone και Mac.' : 'Γράψε τον κωδικό πρόσβασης. Θα σου τον ζητήσει μόνο αυτή τη φορά σε αυτή τη συσκευή.'}</p>
       <label>Κωδικός πρόσβασης<input name="k" type="password" autocomplete="${first ? 'new-password' : 'current-password'}" minlength="${first ? 8 : 6}" required></label>
       ${first ? '<label>Ξανά τον ίδιο κωδικό<input name="k2" type="password" autocomplete="new-password" minlength="8" required></label>' : ''}
@@ -105,12 +107,21 @@
     }[st];
     dlg.innerHTML = `<form class="glass" onsubmit="return false"><h2>Ρυθμίσεις</h2>${C.env === 'dev' ? '<p class="sub"><b style="color:#ffc75f">ΔΟΚΙΜΑΣΤΙΚΗ ΕΚΔΟΣΗ</b></p>' : ''}
       <div class="sbox"><b>Ειδοποιήσεις</b>${push}</div>
+      <div class="sbox"><b>Αυτοματισμοί</b>
+      <label>Υπενθύμιση πριν από κάθε task με ώρα<select id="sr">${[[0,'Όχι'],[10,'10 λεπτά πριν'],[15,'15 λεπτά πριν'],[30,'30 λεπτά πριν'],[60,'1 ώρα πριν']].map(([v,l])=>`<option value="${v}" ${(+(prof().remind??30))===v?'selected':''}>${l}</option>`).join('')}</select></label>
+      <label style="display:flex;align-items:center;gap:10px;color:var(--ink)"><input type="checkbox" id="sw" style="width:20px;height:20px;min-height:0" ${prof().weekly===false?'':'checked'}>Σύνοψη εβδομάδας κάθε Κυριακή 20:00</label>
+      <label>Ειδοποίηση όταν ένας συνεργάτης μου χρωστάει πάνω από (€, 0 = ποτέ)<input id="sd" type="number" inputmode="decimal" min="0" step="10" value="${esc(prof().debt??0)}"></label>
+      <p class="sub" style="margin:0">Η πρωινή ειδοποίηση στις 08:00 περιλαμβάνει πάντα τα tasks με τις ώρες τους και τις πληρωμές της ημέρας.</p></div>
       <div class="fb" style="justify-content:flex-start"><button type="button" class="btn" id="photo">Αλλαγή φωτογραφίας</button><button type="button" class="btn" data-act="bg">Αλλαγή φόντου</button><button type="button" class="btn" id="exp">Εξαγωγή δεδομένων</button><button type="button" class="btn red" id="out">Κλείδωμα συσκευής</button></div>
       <div class="fb"><button type="button" class="btn" data-act="close">Κλείσιμο</button></div></form>`;
     const q = s => dlg.querySelector(s);
     q('#pon')?.addEventListener('click', async () => { try { await enablePush(); toast('Οι ειδοποιήσεις ενεργοποιήθηκαν'); settings(dlg, toast) } catch (e) { toast(e.message === 'denied' ? 'Δεν δόθηκε άδεια. Άλλαξέ το από Ρυθμίσεις iPhone → Ειδοποιήσεις.' : 'Δεν ενεργοποιήθηκαν: ' + e.message) } });
     q('#poff')?.addEventListener('click', async () => { await disablePush(); toast('Οι ειδοποιήσεις απενεργοποιήθηκαν'); settings(dlg, toast) });
     q('#ptest')?.addEventListener('click', async () => { const { data, error } = await sb.functions.invoke('dash-push', { body: { test: true } }); toast(error ? 'Αποτυχία αποστολής' : data?.sent ? 'Στάλθηκε, κοίτα την οθόνη σου' : 'Δεν βρέθηκε συσκευή, ενεργοποίησε ξανά') });
+    const saveProf = async patch => { const prf = { ...prof(), ...patch }; put('settings', 'profile', prf); const { error } = await sb.from('dash_docs').upsert({ col: 'settings', id: 'profile', data: prf, updated_at: new Date().toISOString() }); toast(error ? 'Δεν αποθηκεύτηκε' : 'Αποθηκεύτηκε') };
+    q('#sr').addEventListener('change', e => saveProf({ remind: +e.target.value }));
+    q('#sw').addEventListener('change', e => saveProf({ weekly: e.target.checked }));
+    q('#sd').addEventListener('change', e => saveProf({ debt: Math.max(0, +e.target.value || 0) }));
     q('#photo').addEventListener('click', () => pickPhoto(toast));
     q('#exp').addEventListener('click', () => { const o = { exported: new Date().toISOString() }; COLS.forEach(c => o[c] = [...(store[c] || new Map()).entries()].map(([id, d]) => ({ id, ...d }))); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' })); a.download = `pinakas-${new Date().toISOString().slice(0, 10)}.json`; a.click(); toast('Το αρχείο κατέβηκε') });
     q('#out').addEventListener('click', () => { setKey(null); location.reload() });

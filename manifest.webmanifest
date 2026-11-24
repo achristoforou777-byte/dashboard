@@ -1,12 +1,12 @@
 {
- "name": "ACH Work",
- "short_name": "ACH Work",
+ "name": "uphill.cy",
+ "short_name": "uphill.cy",
  "id": "./",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
  "background_color": "#0d0b0a",
- "theme_color": "#0d0b0a",
+ "theme_color": "#253a30",
  "lang": "el",
  "icons": [
   {
@@ -24,6 +24,11 @@
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "maskable"
+  },
+  {
+   "src": "icon.svg",
+   "sizes": "any",
+   "type": "image/svg+xml"
   }
  ]
 }
