@@ -284,11 +284,12 @@ function partnerBal(pid){const p=proj(pid);if(!p||!p.partner)return null;const l
  return Math.abs(d)<0.005?0:d}
 function pstats(pid){const l=S.all.filter(x=>x.project===pid&&(x.date||'')<=today());
  return{pl:sum(l,'in')-sum(l,'out'),mine:sumMine(l,'in')-sumMine(l,'out'),took:sum(l,'return'),bal:partnerBal(pid)}}
+const owe=n=>n?'neg':'';
 const signed=n=>(n>0?'+':n<0?'−':'')+eur(Math.abs(n));
 function pcard(p){const s=pstats(p.id),t=today(),tt=S.tasks.filter(x=>x.project===p.id&&!x.done&&x.due&&x.due<=t).length,open=S.tasks.filter(x=>x.project===p.id&&!x.done).length;
  return `<a class="pc glass" href="#p-${esc(p.id)}"><div class="pch"><i class="dot" style="color:${color(p.id)};background:${color(p.id)}"></i><b>${esc(p.name)}</b><button class="sharebtn ${p.share==null?'unset':''}" data-act="share" data-id="${esc(p.id)}">${p.share==null?'Όρισε %':'Εσύ '+p.share+'%'}</button></div>
  <div class="pcn"><div><small>Κέρδος project</small><b class="${sgn(s.pl)}">${signed(s.pl)}</b></div><div><small>Το μερίδιό μου</small><b class="${sgn(s.mine)}">${signed(s.mine)}</b>${s.took?`<em>πήρες ήδη ${eur(s.took)}</em>`:''}</div>
- <div><small>${p.partner?esc(p.partner):'Συνεργάτης'}</small>${s.bal==null?'<b class="mutev">—</b>':`<b class="${sgn(s.bal)}">${signed(s.bal)}</b><em>${s.bal>0?'σου χρωστάει':s.bal<0?'του χρωστάς':'είστε ίσοι'}</em>`}</div></div>
+ <div><small>${p.partner?esc(p.partner):'Συνεργάτης'}</small>${s.bal==null?'<b class="mutev">—</b>':`<b class="${owe(s.bal)}">${signed(s.bal)}</b><em>${s.bal>0?'σου χρωστάει':s.bal<0?'του χρωστάς':'είστε ίσοι'}</em>`}</div></div>
  <div class="pcf">${tt?`<span class="hot">${tt} για σήμερα</span>`:''}<span>${open} ${open===1?'ανοιχτό task':'ανοιχτά tasks'}</span>${p.next?`<span class="nx">Επόμενο: ${esc(p.next)}</span>`:''}</div></a>`}
 function payToday(d){return calRange(d,d).filter(i=>i.k==='tx').map(i=>i.x)}
 function vHome(){
@@ -303,7 +304,7 @@ function vHome(){
  ${pays.length?`<div class="grp">Πληρωμές σήμερα</div>${pays.map(x=>txRow(x)).join('')}`:''}
  ${over.length+tod.length+pays.length?'':empty('Τίποτα για σήμερα. Καλή μέρα! ☀️')}
  ${nxt.length?`<details class="nxt"><summary>Επόμενες 7 μέρες · ${nxt.length}</summary>${nxt.map(x=>taskRow(x)).join('')}</details>`:''}</section>
- <div class="chead" style="margin:4px 4px 12px"><div><h2 style="font-size:19px">Τα projects μου</h2><p class="sub">Το μερίδιό μου: <b class="${sgn(mine)}">${signed(mine)}</b> · Συνεργάτες: <b class="${sgn(owed)}">${signed(owed)}</b> ${owed>0?'μου χρωστάνε':owed<0?'τους χρωστάω':''}</p></div><button class="btn" data-act="add" data-kind="tx" data-type="out">+ Πλήρωσα / Πήρα</button></div>
+ <div class="chead" style="margin:4px 4px 12px"><div><h2 style="font-size:19px">Τα projects μου</h2><p class="sub">Το μερίδιό μου: <b class="${sgn(mine)}">${signed(mine)}</b> · Συνεργάτες: <b class="${owe(owed)}">${signed(owed)}</b> ${owed>0?'μου χρωστάνε':owed<0?'τους χρωστάω':''}</p></div><button class="btn" data-act="add" data-kind="tx" data-type="out">+ Πλήρωσα / Πήρα</button></div>
  <section class="pgrid">${act.map(pcard).join('')||`<div class="card glass">${empty('Δεν υπάρχουν ενεργά projects.')}</div>`}</section>`}
 
 function vProjects(){const act=projs().filter(p=>p.status==='active'),arc=projs().filter(p=>p.status!=='active');
@@ -322,7 +323,7 @@ function vProject(id){
  <section class="kpis"><div class="kpi glass"><div class="lab">Κέρδος project</div><strong class="${sgn(s.pl)}">${signed(s.pl)}</strong><small class="ks">έσοδα ${eur(sum(l.filter(x=>x.date<=today()),'in'))} · έξοδα ${eur(sum(l.filter(x=>x.date<=today()),'out'))}</small></div>
  <div class="kpi glass"><div class="lab">Το ποσοστό μου</div><strong>${pShare(p)}%</strong><small class="ks"><button class="tt" style="padding:0;color:var(--acc2)" data-act="share" data-id="${esc(id)}">Αλλαγή</button></small></div>
  <div class="kpi glass"><div class="lab">Το μερίδιό μου</div><strong class="${sgn(s.mine)}">${signed(s.mine)}</strong><small class="ks">${s.took?`πήρες ήδη ${eur(s.took)}`:'δεν έχεις πάρει ακόμα'}</small></div>
- <div class="kpi glass"><div class="lab">${p.partner?esc(p.partner):'Συνεργάτης'}</div><strong class="${sgn(s.bal||0)}">${s.bal==null?'—':signed(s.bal)}</strong><small class="ks">${s.bal==null?'χωρίς συνεργάτη':s.bal>0?'σου χρωστάει':s.bal<0?'του χρωστάς':'είστε ίσοι'}</small></div></section>
+ <div class="kpi glass"><div class="lab">${p.partner?esc(p.partner):'Συνεργάτης'}</div><strong class="${owe(s.bal||0)}">${s.bal==null?'—':signed(s.bal)}</strong><small class="ks">${s.bal==null?'χωρίς συνεργάτη':s.bal>0?'σου χρωστάει':s.bal<0?'του χρωστάς':'είστε ίσοι'}</small></div></section>
  <section class="grid"><div class="card glass"><div class="chead"><div><h2>Tasks</h2><p class="sub">${open.length} ανοιχτά · ${done.length} ολοκληρωμένα</p></div><button class="btn" data-act="add" data-kind="task">+ Task</button></div>${open.map(x=>taskRow(x,false)).join('')||empty('Κανένα ανοιχτό task.')}
  ${done.length?`<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--mute);font-size:13px">Ολοκληρωμένα (${done.length})</summary>${done.map(x=>taskRow(x,false)).join('')}</details>`:''}</div>
  <div class="card glass"><div class="chead"><div><h2>Σημειώσεις</h2><p class="sub">Τι έγινε, τι συμφωνήθηκε</p></div><button class="btn" data-act="add" data-kind="note">+</button></div>${ns.map(n=>`<div class="note"><small>${fmtD(n.date)} · <button class="tt" style="display:inline;padding:0;color:var(--dim);font-size:12.5px" data-act="edit" data-kind="note" data-id="${esc(n.id)}">αλλαγή</button></small><p>${esc(n.text)}</p></div>`).join('')||empty('Καμία σημείωση ακόμα.')}</div></section>
@@ -401,7 +402,7 @@ function chrome(){
  $('nav').innerHTML=NAV.map(([k,l,i])=>nl(k,l,i,1)).join('');$('tabbar').innerHTML=NAV.map(([k,l,i])=>nl(k,l,i)).join('');
  $('plist').innerHTML=projs().filter(p=>p.status==='active').map(p=>`<a class="plink" href="#p-${esc(p.id)}"><i class="dot" style="color:${color(p.id)};background:${color(p.id)}"></i>${esc(p.name)}</a>`).join('')||'<p class="empty" style="padding:6px 10px">Κανένα ακόμα</p>';
  const ap=projs().filter(p=>p.status==='active').map(p=>pstats(p.id)),mn=ap.reduce((a,x)=>a+x.mine,0),ow=ap.reduce((a,x)=>a+(x.bal||0),0);
- $('meter').innerHTML=`<small><span>Το μερίδιό μου</span></small><b class="${sgn(mn)}">${signed(mn)}</b><small style="margin-top:6px"><span>Συνεργάτες</span><span class="${sgn(ow)}">${signed(ow)}</span></small>`;
+ $('meter').innerHTML=`<small><span>Το μερίδιό μου</span></small><b class="${sgn(mn)}">${signed(mn)}</b><small style="margin-top:6px"><span>Συνεργάτες</span><span class="${owe(ow)}">${signed(ow)}</span></small>`;
  const p=r.startsWith('p-')&&proj(r.slice(2));
  $('ttl').textContent=S.q?'Αναζήτηση':p?'Project':({home:'Αρχική',projects:'Projects',tasks:'Tasks',money:'Χρήματα',cal:'Ημερολόγιο'}[r]||'Αρχική');
  $('tsub').textContent=new Date().toLocaleDateString('el-GR',{weekday:'long',day:'numeric',month:'long'});
