@@ -26,7 +26,7 @@
   let curKey = null;
   async function bioOK() { try { return !!(window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) } catch { return false } }
   async function bioAssert(rec) {
-    const cred = await navigator.credentials.get({ publicKey: { challenge: u8(32), allowCredentials: [{ type: 'public-key', id: fromB(rec.id), transports: ['internal', 'hybrid'] }], userVerification: 'required', timeout: 60000, extensions: { prf: { eval: { first: fromB(rec.salt) } } } } });
+    const cred = await navigator.credentials.get({ publicKey: { challenge: u8(32), allowCredentials: [{ type: 'public-key', id: fromB(rec.id), transports: ['internal'] }], userVerification: 'required', timeout: 60000, extensions: { prf: { eval: { first: fromB(rec.salt) } } } } });
     if (!cred) throw new Error('cancel');
     return cred.getClientExtensionResults()?.prf?.results?.first || null;
   }
@@ -34,7 +34,7 @@
   async function bioEnable(k) {
     const salt = u8(32);
     const cred = await navigator.credentials.create({ publicKey: {
-      rp: { name: 'uphill.cy' }, user: { id: enc.encode('uphill-' + C.env), name: 'uphill.cy' + (C.env === 'dev' ? ' (dev)' : ''), displayName: 'uphill.cy' },
+      rp: { name: 'uphill.cy' }, user: { id: u8(16), name: 'uphill.cy' + (C.env === 'dev' ? ' (dev)' : ''), displayName: 'uphill.cy' },
       challenge: u8(32), pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
       authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' },
       timeout: 60000, extensions: { prf: { eval: { first: salt } } } } });
